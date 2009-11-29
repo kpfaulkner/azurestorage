@@ -1,0 +1,83 @@
+Azure Storage Scala Client:
+===========================
+
+TODO:
+-----
+
++ Unit tests.
++ Add Block calls.
++ Complete Blob calls.
++ Complete Container calls.
++ Add proper exception handling.
++ Add more logging.
++ Add Queues
++ Add Tables
+
+
+
+Building:
+---------
+
+AzureStorage project is setup as a Maven 2.0 project. To compile simply use the usual: "mvn clean install" command to generate the fully self contained
+azurestorage-1.0-SNAPSHOT-jar-with-dependencies.jar file. (the non self contained version azurestorage-1.0-SNAPSHOT.jar exists if you wish to use that 
+instead).
+
+
+Usage:
+------
+
+An application should create an instance of AzureBlobStorage class initializing it with the accountname and authentication key.
+Once this instance is created the mechanism for creating/retrieving blobs, containers (and associated metadata) are available.
+
+The most basic example of use is:
+
+      // create a container.
+      var as = new AzureBlobStorage("mystore", "mykeyputhere")
+      as.createContainer(  "mycontainer" )
+      
+      // create a blob (no data)
+      var blob = new Blob("myblob")
+      
+      // store the blob.
+      as.storeBlob( blob, "mycontainer")
+      
+      
+ The AzureBlobStorage API is still in flux, so there may be changes such as createContainer returns an instance of the Container class, and that has to be
+ passed into the storeBlob method. This is all in flux... so keep on your toes :)
+ 
+
+Testing:
+--------
+
+Currently there are no unit tests (bad I know), but there is a test application that will connect to the REAL Azure Blob Storage and attempting various functions (set blob, get blob etc etc etc). This probably needs to change to some proper integration test, but really what we need can be based on this current method.
+
+Command to run tests:
+
+scala -cp target/test-classes/:target/azurestorage-1.0-SNAPSHOT-jar-with-dependencies.jar  azurestorage.basicblobtest
+
+
+
+Design Notes:
+-------------
+
+Although logically blobs live inside containers the datatypes do NOT reflect this. ie the Container class doesn't have a list of Blob instances within it.
+If this was to happen the overhead of just retrieving a container would be rather heavy. This is mainly due to actions on Containers and Blobs are 
+(for the most part) separate to eachother. The application will be performing a task on a Container OR a Blob, but a single action does NOT depend on 
+both at the same time. If while storing a Blob the properties of a Container had to be consulted then maybe this tight coupling at implementation level
+might make sense. But until then, they're staying separate.
+
+This may change, but I really do NOT see any benefit from it. Ease of use or readability aren't improved by doing this.
+
+The client application only ever accesses the AzureBlobStorage class. Internally there are multiple Data Access Object (DAO) classes. Each DAO class
+specialises in one particular data object. eg AzureStorageBlobDAO deals with blobs, AzureStorageContainerDAO deals with containers etc.
+
+AzureStorageCommon has an object implementation which holds various utility functions used by various DAO's. This *may* get changed to being a trait
+of the various DAO classes, but until the design is more concrete this will remain a utility object.
+
+Also to note that the class API that interacts with the DAO (AzureBlobStorage) doesn't let exceptions bubble up to the client application. AzureBlobStorage 
+will catch all exceptions (good or bad, I haven't decided yet) and modifies the Status instance returned by the given method. This may change but for 
+the moment the design goal is that the client will always receive a Status instance and NOT an exception.
+
+
+
+

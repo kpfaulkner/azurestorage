@@ -1,0 +1,6 @@
+<log>
+    filename = "azurestorage.log"
+    roll = "daily"
+    level = "debug"
+</log>
+

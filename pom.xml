@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>azurestorage</groupId>
+  <artifactId>azurestorage</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>azurestorage</name>
+  <inceptionYear>2009</inceptionYear>
+  <properties>
+    <scala.version>2.7.6</scala.version>
+  </properties>
+
+
+  <repositories>
+    <repository>
+      <id>scala-tools.org</id>
+      <name>Scala-Tools Maven2 Repository</name>
+      <url>http://scala-tools.org/repo-releases</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>scala-tools.org</id>
+      <name>Scala-Tools Maven2 Repository</name>
+      <url>http://scala-tools.org/repo-releases</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+
+  <dependencies>
+
+  <!-- 
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.0</version>
+    <scope>compile</scope>
+  </dependency>
+-->
+
+<dependency>
+    <groupId>joda-time</groupId>
+    <artifactId>joda-time</artifactId>
+    <version>1.6</version>
+</dependency>
+
+<dependency>
+    <groupId>commons-httpclient</groupId>
+    <artifactId>commons-httpclient</artifactId>
+    <version>3.1</version>
+  </dependency>
+      <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+    </dependency> 
+  
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.4</version>
+    </dependency> 
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency> 
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.specs</groupId>
+      <artifactId>specs</artifactId>
+      <version>1.2.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.lag</groupId>
+      <artifactId>configgy</artifactId>
+      <version>1.2.1a</version>
+      <scope>compile</scope>
+    </dependency>
+    
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/azurestorage</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
+    <plugins>
+    
+          <plugin> 
+       <artifactId>maven-assembly-plugin</artifactId> 
+       <version>2.2-beta-2</version> 
+       <executions> 
+           <execution> 
+               <id>create-executable-jar</id> 
+               <phase>package</phase> 
+               <goals> 
+               <goal>single</goal> 
+               </goals> 
+               <configuration> 
+                   <descriptorRefs> 
+                       <descriptorRef> jar-with-dependencies</descriptorRef> 
+                   </descriptorRefs> 
+                   <archive> 
+                       <manifest> 
+                           <mainClass>com.azurestorage</mainClass> 
+                       </manifest> 
+                   </archive> 
+               </configuration> 
+           </execution> 
+       </executions> 
+       </plugin>  
+       
+       
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
+          <args>
+            <arg>-target:jvm-1.5</arg>
+          </args>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <buildcommands>
+            <buildcommand>ch.epfl.lamp.sdt.core.scalabuilder</buildcommand>
+          </buildcommands>
+          <additionalProjectnatures>
+            <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
+          </additionalProjectnatures>
+          <classpathContainers>
+            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
+            <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
+          </classpathContainers>
+        </configuration>
+      </plugin>
+      
+      
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- <id>${project.artifactId}-fetch-deps</id> -->
+            <id>${project.artifactId}</id>
+            <phase>generate-sources</phase>
+            <goals><goal>copy-dependencies</goal></goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}:.</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <excludeTransitive>true</excludeTransitive>
+              <excludeArtifactIds>junit</excludeArtifactIds>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>
