@@ -7,7 +7,7 @@
   <name>azurestorage</name>
   <inceptionYear>2009</inceptionYear>
   <properties>
-    <scala.version>2.7.6</scala.version>
+    <scala.version>2.7.7</scala.version>
   </properties>
 
 
@@ -16,6 +16,11 @@
       <id>scala-tools.org</id>
       <name>Scala-Tools Maven2 Repository</name>
       <url>http://scala-tools.org/repo-releases</url>
+    </repository>
+    <repository>
+      <id>maven</id>
+      <name>maven repo</name>
+      <url>http://repo1.maven.org</url>
     </repository>
   </repositories>
 
@@ -61,6 +66,7 @@
       <artifactId>commons-codec</artifactId>
       <version>1.4</version>
     </dependency> 
+
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
@@ -86,7 +92,7 @@
     <dependency>
       <groupId>net.lag</groupId>
       <artifactId>configgy</artifactId>
-      <version>1.2.1a</version>
+      <version>1.5.4</version>
       <scope>compile</scope>
     </dependency>
     
@@ -168,7 +174,7 @@
             <phase>generate-sources</phase>
             <goals><goal>copy-dependencies</goal></goals>
             <configuration>
-              <outputDirectory>${project.build.outputDirectory}:.</outputDirectory>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
               <stripVersion>true</stripVersion>
               <excludeTransitive>true</excludeTransitive>
               <excludeArtifactIds>junit</excludeArtifactIds>
