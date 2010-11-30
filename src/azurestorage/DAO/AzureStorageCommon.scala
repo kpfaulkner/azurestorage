@@ -123,17 +123,17 @@ object AzureStorageCommon
     var headersSorted = getSortedMSHeaders( headers )
     
     var fullUrl = methodName + "\n" + 
-               "\r\n" +
-               "\r\n" +
-                "0\r\n" +
-                "\r\n"  +
-                "\r\n"  +
-                "\r\n"  +
-                "\r\n" +
-                "\r\n" + 
-                "\r\n" +
-                "\r\n" +
-                "\r\n"
+               "\n" +
+               "\n" +
+                "0\n" +
+                "\n"  +
+                "\n"  +
+                "\n"  +
+                "\n" +
+                "\n" + 
+                "\n" +
+                "\n" +
+                "\n"
                
     
     for ( header <- headersSorted )
@@ -141,7 +141,7 @@ object AzureStorageCommon
       if ( header.toLowerCase().startsWith("x-ms"))
       {
       
-        fullUrl += header.toLowerCase()+":" + method.getRequestHeader( header ).getValue()+"\r\n"
+        fullUrl += header.toLowerCase()+":" + method.getRequestHeader( header ).getValue()+"\n"
       }
     }
     

@@ -135,8 +135,12 @@ class AzureStorageContainerDAO
   def setupProxy( client: HttpClient ) =
   {
     // just testing out proxy idea. FIXME
-    var config = client.getHostConfiguration()
-    config.setProxy( proxy, proxyPort )
+
+    if ( proxy != "" )
+    {
+      var config = client.getHostConfiguration()
+      config.setProxy( proxy, proxyPort )
+    }
   }
 
 
