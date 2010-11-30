@@ -67,6 +67,9 @@ class AzureStorageContainerDAO
     
   val log = Logger.get
 
+  val proxy = Configgy.config.getString("proxy", "")
+  val proxyPort =  Configgy.config.getInt("proxy_port", 1080)
+
   private def parseContainerList( xml: String ): List[Container] = 
   {
     log.info("AzureStorageContainerDAO::parseContainerList start")  
@@ -106,6 +109,9 @@ class AzureStorageContainerDAO
   
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
     
+    // setup proxy.
+    setupProxy( client )
+
     var status = new Status()
     
     var res = client.executeMethod( method )    
@@ -126,23 +132,43 @@ class AzureStorageContainerDAO
   }
   
   
+  def setupProxy( client: HttpClient ) =
+  {
+    // just testing out proxy idea. FIXME
+    var config = client.getHostConfiguration()
+    config.setProxy( proxy, proxyPort )
+  }
+
+
   def createContainer( accountName:String, key:String, container:String ): Status = 
   {
     log.info("AzureStorageContainerDAO::createContainer start") 
-    var url = "http://"+accountName+baseBlobURL+"/"+container
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"?restype=container"
   
     var status = new Status()
 
     var client = new HttpClient()   
     var method = new PutMethod( url )
-    var canonicalResource = "/"+accountName+"/" + container
+    var canonicalResource = "/"+accountName+"/" + container + "\nrestype:container"
+    //var canonicalResource = "/"+accountName+"/" + container + "\n"
+
   
+    method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
-    
+
+    // setup proxy.
+    setupProxy( client )
+
+
     var res = client.executeMethod( method )    
      
+    log.debug("res is " + res.toString() )
+
     status.code = res
-    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+
     if (res == StatusCodes.CREATE_CONTAINER_SUCCESS )
     {
       status.successful = true
@@ -164,6 +190,9 @@ class AzureStorageContainerDAO
   
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
     
+    // setup proxy.
+    setupProxy( client )
+
     var res = client.executeMethod( method )    
     status.code = res 
    
@@ -192,7 +221,10 @@ class AzureStorageContainerDAO
     
     AzureStorageCommon.addMetadataToMethod( method, keyValuePairs )
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
-     
+    
+    // setup proxy.
+    setupProxy( client )
+         
     var res = client.executeMethod( method )    
     var responseBody = method.getResponseBodyAsString()
     
@@ -218,7 +250,10 @@ class AzureStorageContainerDAO
     var method = new GetMethod( url )
     
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
-         
+    
+    // setup proxy.
+    setupProxy( client )
+             
     var res = client.executeMethod( method )    
     var h = method.getResponseHeaders()
     var metadata = AzureStorageCommon.extractMetadata( h, "" )
@@ -328,7 +363,10 @@ class AzureStorageContainerDAO
     
     var entity = new ByteArrayRequestEntity( xml.getBytes() )
     method.setRequestEntity( entity )
-    
+
+    // setup proxy.
+    setupProxy( client )
+        
     var res = client.executeMethod( method )    
     
     status.code = res
@@ -426,7 +464,10 @@ class AzureStorageContainerDAO
     keyValuePairs += "x-ms-version" -> "2009-07-17"
     AzureStorageCommon.addMetadataToMethod( method, keyValuePairs )
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null)
-    
+
+    // setup proxy.
+    setupProxy( client )
+        
     var res = client.executeMethod( method )    
     
     status.code = res

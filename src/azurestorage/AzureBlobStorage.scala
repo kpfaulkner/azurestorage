@@ -76,7 +76,7 @@ class AzureBlobStorage( accName:String, k: String )
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::createContainer exception")
+          log.error("AzureBlobStorage::createContainer exception " + ex.toString() )
           status.code = StatusCodes.FAILED
         }
     }

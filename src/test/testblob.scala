@@ -148,6 +148,7 @@ object basicblobtest
   def main(args: Array[String]) =
   {
 
+    deleteContainer()
     setBlob()
     getBlob()
     createContainer()

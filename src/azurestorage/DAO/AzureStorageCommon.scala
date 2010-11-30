@@ -86,7 +86,7 @@ object AzureStorageCommon
     return ar
   }
   
-  def generateQueryString( method:HttpMethodBase , accountName:String, canonicalResource:String): String =
+  def generateQueryStringOrig( method:HttpMethodBase , accountName:String, canonicalResource:String): String =
   {
     log.info("AzureStorageBlobDAO::generateQueryString start")
     
@@ -113,7 +113,45 @@ object AzureStorageCommon
     return fullUrl
   }
   
-  
+  def generateQueryString( method:HttpMethodBase , accountName:String, canonicalResource:String): String =
+  {
+    log.info("AzureStorageBlobDAO::generateQueryString start")
+    
+    
+    var methodName = method.getName()
+    var headers = method.getRequestHeaders()
+    var headersSorted = getSortedMSHeaders( headers )
+    
+    var fullUrl = methodName + "\n" + 
+               "\r\n" +
+               "\r\n" +
+                "0\r\n" +
+                "\r\n"  +
+                "\r\n"  +
+                "\r\n"  +
+                "\r\n" +
+                "\r\n" + 
+                "\r\n" +
+                "\r\n" +
+                "\r\n"
+               
+    
+    for ( header <- headersSorted )
+    {
+      if ( header.toLowerCase().startsWith("x-ms"))
+      {
+      
+        fullUrl += header.toLowerCase()+":" + method.getRequestHeader( header ).getValue()+"\r\n"
+      }
+    }
+    
+    //fullUrl += canonicalResource
+    fullUrl += canonicalResource
+
+    log.debug("query string to encode "+ fullUrl )
+    return fullUrl
+  }
+    
   // create partial function with URL generator?
   def generateHMAC( method:HttpMethodBase, key:String, accountName:String, canonicalResource:String): String =
   {
@@ -160,10 +198,10 @@ object AzureStorageCommon
     }
     
     var headers = method.getRequestHeaders()
-    method.setRequestHeader( new Header("Content-length", length.toString() ))
-    method.setRequestHeader( new Header("X-ms-date", dateHeader) )
-    method.setRequestHeader( new Header("Host", accountName+baseBlobURL ))
-    method.setRequestHeader( new Header("Content-type", "application/octet-stream"))
+    //method.setRequestHeader( new Header("Content-length", length.toString() ))
+    method.setRequestHeader( new Header("x-ms-date", dateHeader) )
+    //method.setRequestHeader( new Header("Host", accountName+baseBlobURL ))
+    //method.setRequestHeader( new Header("Content-type", "application/octet-stream"))
     
     var myHash = generateHMAC( method, key, accountName, canonicalResource)
     var authorization = "SharedKey "+accountName+":"+ myHash 
