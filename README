@@ -4,15 +4,13 @@ Azure Storage Scala Client:
 TODO:
 -----
 
-+ Unit tests.
-+ Add Block calls.
-+ Complete Blob calls.
-+ Complete Container calls.
-+ Add proper exception handling.
-+ Add more logging.
-+ Add Queues
-+ Add Tables
+Not an exhaustive list, but rough order of priorities
 
++ Complete blob block methods
++ Start blob page methods
++ Complete container calls.
++ Queues
++ Tables
 
 
 Building:

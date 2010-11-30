@@ -67,6 +67,20 @@ object AzureStorageCommon
   Configgy.configure("azurestorage.cfg")
   val log = Logger.get
   
+  val proxy = Configgy.config.getString("proxy", "")
+  val proxyPort =  Configgy.config.getInt("proxy_port", 1080)
+
+  def setupProxy( client: HttpClient ) =
+  {
+    // just testing out proxy idea. FIXME
+
+    if ( proxy != "" )
+    {
+      var config = client.getHostConfiguration()
+      config.setProxy( proxy, proxyPort )
+    }
+  }
+
   def getSortedMSHeaders( headers: Array[Header ]): Array[String] =
   {
     log.info("AzureStorageBlobDAO::getSortedMSHeaders start")
@@ -86,34 +100,9 @@ object AzureStorageCommon
     return ar
   }
   
-  def generateQueryStringOrig( method:HttpMethodBase , accountName:String, canonicalResource:String): String =
-  {
-    log.info("AzureStorageBlobDAO::generateQueryString start")
-    
-    
-    var methodName = method.getName()
-    var headers = method.getRequestHeaders()
-    var headersSorted = getSortedMSHeaders( headers )
-    
-    // skipping various required headers. (\n is valid )
-    //var fullUrl = methodName+"\n\n\n\n" 
-    var fullUrl = methodName+"\n\n"+"application/octet-stream"+"\n\n" 
-    
-    for ( header <- headersSorted )
-    {
-      if (header.toLowerCase().startsWith("x-ms"))
-      {
-        fullUrl += header.toLowerCase()+":" + method.getRequestHeader( header ).getValue()+"\n"
-      }
-    }
-    
-    fullUrl += canonicalResource
-    
-    log.debug("query string to encode "+ fullUrl )
-    return fullUrl
-  }
+
   
-  def generateQueryString( method:HttpMethodBase , accountName:String, canonicalResource:String): String =
+  def generateQueryString( method:HttpMethodBase , accountName:String, canonicalResource:String, dataLength:String ): String =
   {
     log.info("AzureStorageBlobDAO::generateQueryString start")
     
@@ -125,7 +114,7 @@ object AzureStorageCommon
     var fullUrl = methodName + "\n" + 
                "\n" +
                "\n" +
-                "0\n" +
+                dataLength +"\n" +
                 "\n"  +
                 "\n"  +
                 "\n"  +
@@ -153,7 +142,7 @@ object AzureStorageCommon
   }
     
   // create partial function with URL generator?
-  def generateHMAC( method:HttpMethodBase, key:String, accountName:String, canonicalResource:String): String =
+  def generateHMAC( method:HttpMethodBase, key:String, accountName:String, canonicalResource:String, dataLength:String): String =
   {
     log.info("AzureStorageBlobDAO::generateHMAC start")
     var signingKey = new SecretKeySpec( decodeBase64( key ), "HmacSHA256")
@@ -161,7 +150,7 @@ object AzureStorageCommon
     var mac = Mac.getInstance("HmacSHA256")   
     mac.init( signingKey )
     
-    var url = generateQueryString( method, accountName, canonicalResource)
+    var url = generateQueryString( method, accountName, canonicalResource, dataLength)
     var rawHmac = mac.doFinal(url.getBytes());
     var result = encodeBase64String(rawHmac)
     var result2 = result.trim()
@@ -191,19 +180,18 @@ object AzureStorageCommon
     
     var dateHeader = getUTC()
 
-    var length = 0
+    var lengthStr = ""
     if ( data != null )
     {
-      length = data.length
+      lengthStr = data.length.toString()
+      
     }
     
     var headers = method.getRequestHeaders()
-    //method.setRequestHeader( new Header("Content-length", length.toString() ))
     method.setRequestHeader( new Header("x-ms-date", dateHeader) )
-    //method.setRequestHeader( new Header("Host", accountName+baseBlobURL ))
-    //method.setRequestHeader( new Header("Content-type", "application/octet-stream"))
-    
-    var myHash = generateHMAC( method, key, accountName, canonicalResource)
+    method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
+ 
+    var myHash = generateHMAC( method, key, accountName, canonicalResource, lengthStr)
     var authorization = "SharedKey "+accountName+":"+ myHash 
    
     method.setRequestHeader( new Header("Authorization", authorization) )

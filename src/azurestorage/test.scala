@@ -30,17 +30,16 @@ object basicblobtest
   
   def setBlob() =
   {
-      var b = new Blob("bar")
-      b.data = new Array[Byte]( 3 )
-      b.data(0) = 60
-      b.data(1) = 61
-      b.data(2) = 61
+  
+      var data = "dummydata".getBytes()
+      
+      var b = new Blob("bar", data)
       
       // create container?
       // yes contaminates results (if it fails) still, required.
       as.createContainer(  testContainerName )
 
-      /*
+      
       var status = as.setBlob( testContainerName, b)    
       
       if (status.successful)
@@ -52,7 +51,7 @@ object basicblobtest
         println("setBlob NOT successful")
       }
       
-      */
+      
   }
   
   def getBlob() =
@@ -64,7 +63,9 @@ object basicblobtest
     
     if (status.successful)
     {
-      println("getBlob successful")
+      var blob = res._2
+      println("getBlob successful " + new String( blob.data ) )
+      
     }
     else
     {
@@ -154,8 +155,9 @@ object basicblobtest
     //deleteContainer()
     setBlob()
     
-    /*
+    
     getBlob()
+    /*
     createContainer()
     listContainers()
     setContainerMetadata()

@@ -82,10 +82,17 @@ class AzureStorageBlobDAO
     method.setURI( new URI( url ) )
     
     AzureStorageCommon.addMetadataToMethod( method, blob.metaData )
+    
+    // blob type. 
+    method.setRequestHeader( new Header( BlobProperty.blobType, blob.blobProperties( BlobProperty.blobType ) ) )
+    
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, blob.data )
     
     var res = client.executeMethod( method )    
-    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+
     status.code = res
     
     return status

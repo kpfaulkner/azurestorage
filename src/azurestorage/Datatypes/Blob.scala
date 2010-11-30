@@ -37,6 +37,28 @@ import scala.collection.mutable._
 
 import scala.collection.mutable.Map
 
+
+// probably should just use an enumerator.
+object BlobType
+{
+  val BLOCKBLOB = "BlockBlob"
+  val PAGEBLOB = "PageBlob"
+}
+
+object BlobProperty
+{
+  var contentType="x-ms-blob-content-type"
+  var contentEncoding = "x-ms-blob-content-encoding"
+  var contentLanguage = "x-ms-blob-content-language"
+  var cacheControl = "x-ms-blob-cache-control"
+  var contentMD5 = "x-ms-blob-content-md5"
+  var blobType = "x-ms-blob-type"
+  var metaName = "x-ms-meta-"  // this is a prefix to a custom property name. eg, x-ms-meta-foo = 123
+  var leaseId = "x-ms-lease-id"
+  
+}
+
+
 class Blob( blobName:String )
 {
 
@@ -46,4 +68,22 @@ class Blob( blobName:String )
   
   var data:Array[Byte] = null
   
+  //blob properties.
+  var blobProperties = new HashMap[String, String]()
+
+  setupDefaultProperties( )
+    
+  // constructor with blob data.
+  // once convert to scala 2.8 will just settle for default params.
+  def this( blobName: String, blobData:Array[Byte] ) =
+  {
+    this( blobName )
+    data = blobData
+  }
+  
+  // only setup blobType by default.
+  def setupDefaultProperties( ) =
+  {
+    blobProperties( BlobProperty.blobType ) = BlobType.BLOCKBLOB
+  }
 }
