@@ -75,7 +75,9 @@ class AzureStorageBlobDAO
     
     var status = new Status()
 
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra
+    // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
+    // go figure....
+    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra.replace("=",":")
     var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
     
     var client = new HttpClient()
@@ -130,7 +132,8 @@ class AzureStorageBlobDAO
     
     var client = new HttpClient()
     method.setURI( new URI( url ) )
-   
+    
+    AzureStorageCommon.addMetadataToMethod( method, new HashMap[String,String]() )
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null)
         
     var res = client.executeMethod( method )    
@@ -185,6 +188,10 @@ class AzureStorageBlobDAO
     
     status = res._1
     var blob = res._2
+    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
     
     if (status.code == StatusCodes.GET_BLOB_PROPERTIES_SUCCESS)
     {

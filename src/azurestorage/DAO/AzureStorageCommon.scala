@@ -210,6 +210,7 @@ object AzureStorageCommon
     return status
   }
 
+  // adjusts map. WARNING!
   def addMetadataToMethod( method:HttpMethodBase, keyValuePairs: Map[ String, String]): Status =
   {
 
@@ -220,13 +221,25 @@ object AzureStorageCommon
     
     keyValuePairs("x-ms-date") = dateHeader
     keyValuePairs("x-ms-version") = "2009-09-19"
-    
+
     var headerNameList = new ListBuffer[String]()
     
     for ( header <- keyValuePairs.keys )
     {
       var name = header.toLowerCase()
-      headerNameList += name
+      
+      var kk = name
+      
+      // only add the prefix if we dont already start with X.
+      if ( ! name.startsWith("x-ms") )
+      {
+        kk = "x-ms-meta-" + name
+        
+      }
+      
+      keyValuePairs( kk ) = keyValuePairs( header )
+      
+      headerNameList += kk
     }
     
     
@@ -239,11 +252,7 @@ object AzureStorageCommon
       for ( k <- ar )
       {
         
-        // only add the prefix if we dont already start with X.
-        if ( ! k.startsWith("x-ms") )
-        {
-          k = "x-ms-meta-" + k
-        }
+        log.debug("adding header " + k )
         
         method.setRequestHeader( new Header( k , keyValuePairs(k) ) )
       } 
