@@ -64,15 +64,13 @@ class Blob( blobName:String )
 
   var name:String = blobName
   
-  var metaData:Map[String, String] = null
-  
-  var data:Array[Byte] = null
-  
-  //blob properties.
-  var blobProperties = new HashMap[String, String]()
+  // combined properties and metadata for blob.
+  var metaData = new HashMap[String, String]()
 
   setupDefaultProperties( )
-    
+  
+  var data:Array[Byte] = null
+      
   // constructor with blob data.
   // once convert to scala 2.8 will just settle for default params.
   def this( blobName: String, blobData:Array[Byte] ) =
@@ -84,6 +82,6 @@ class Blob( blobName:String )
   // only setup blobType by default.
   def setupDefaultProperties( ) =
   {
-    blobProperties( BlobProperty.blobType ) = BlobType.BLOCKBLOB
+    metaData( BlobProperty.blobType ) = BlobType.BLOCKBLOB
   }
 }

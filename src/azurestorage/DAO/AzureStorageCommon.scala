@@ -61,7 +61,7 @@ import net.lag.logging.Logger
 
 object AzureStorageCommon
 {
-
+  
   val baseBlobURL = ".blob.core.windows.net"
 
   Configgy.configure("azurestorage.cfg")
@@ -178,7 +178,6 @@ object AzureStorageCommon
     log.info("AzureStorageCommon::populateMethod start")
     var status = new Status()
     
-    var dateHeader = getUTC()
 
     var lengthStr = ""
     if ( data != null )
@@ -186,11 +185,23 @@ object AzureStorageCommon
       lengthStr = data.length.toString()
       
     }
+    else
+    {
+      // FUGLY
+      if ( method.getName() == "PUT")
+      {
+        // for PUT's even with no data, we need a length of 0.
+        lengthStr = "0"
+      }
+    }
     
     var headers = method.getRequestHeaders()
-    method.setRequestHeader( new Header("x-ms-date", dateHeader) )
-    method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
+    //var dateHeader = getUTC()
+    //method.setRequestHeader( new Header("x-ms-date", dateHeader) )
+    //method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
  
+    log.debug("headers are " + headers.toString() )
+    
     var myHash = generateHMAC( method, key, accountName, canonicalResource, lengthStr)
     var authorization = "SharedKey "+accountName+":"+ myHash 
    
@@ -203,30 +214,49 @@ object AzureStorageCommon
   {
 
     var status= new Status()
+    var dateHeader = getUTC()
+    //method.setRequestHeader( new Header("x-ms-date", dateHeader) )
+    //method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
+    
+    keyValuePairs("x-ms-date") = dateHeader
+    keyValuePairs("x-ms-version") = "2009-09-19"
+    
+    var headerNameList = new ListBuffer[String]()
+    
+    for ( header <- keyValuePairs.keys )
+    {
+      var name = header.toLowerCase()
+      headerNameList += name
+    }
+    
+    
+    var ar = headerNameList.toArray[String]
+    
+    Sorting.quickSort( ar )
     
     if (keyValuePairs != null )
     {
-      for ( kv <- keyValuePairs )
+      for ( k <- ar )
       {
-        var header = kv._1
+        
         // only add the prefix if we dont already start with X.
-        if ( ! kv._1.toLowerCase().startsWith("x") )
+        if ( ! k.startsWith("x-ms") )
         {
-          header = "X-ms-meta-" + header
+          k = "x-ms-meta-" + k
         }
         
-        method.setRequestHeader( new Header( header , kv._2) )
+        method.setRequestHeader( new Header( k , keyValuePairs(k) ) )
       } 
     }
     return status
   }
   
-  def extractMetadata( headers: Array[ Header ], prefix:String ): Map[String, String ] =
+  def extractMetadata( headers: Array[ Header ], prefix:String ): HashMap[String, String ] =
   {
   
     var l = new ListBuffer[ Tuple2[String, String ]]()
     
-    var hm = Map[String, String]()
+    var hm = new HashMap[String, String]()
     
     for (h <- headers )
     {

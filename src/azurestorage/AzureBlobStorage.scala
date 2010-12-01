@@ -36,7 +36,7 @@ package azurestorage
 import azurestorage.Datatypes._
 import azurestorage._
 import azurestorage.DAO._
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable._
 import scala.collection.mutable.Map
 import net.lag.configgy.Configgy
 import net.lag.logging.Logger
@@ -380,6 +380,55 @@ class AzureBlobStorage( accName:String, k: String )
   
   ////////////// BLOBS ////////////////////
 
+  // works.
+  def getBlobProperties(   container:String ,blobName:String): ( Status, Blob ) = 
+  {
+    
+    var status = new Status()
+    var blob:Blob= null
+    
+    try
+    {
+      var res = blobDao.getBlobProperties( accountName, key, container, blobName )
+      
+      status = res._1
+      blob = res._2
+     
+      log.debug("status code is " + status.code.toString() ) 
+    }
+    catch
+    {
+      // nasty general catch...
+      case ex: Exception => {
+          log.error("AzureBlobStorage::getBlobProperties exception")
+          status.code = StatusCodes.FAILED
+        }
+    }    
+    
+    return ( status, blob )
+  }
+
+  def setBlobProperties( container:String ,blob:Blob): Status = 
+  {
+    
+    var status = new Status()
+
+    try
+    {
+      status = blobDao.setBlobProperties( accountName, key, container, blob )
+    }
+    catch
+    {
+      // nasty general catch...
+      case ex: Exception => {
+          log.error("AzureBlobStorage::setBlobProperties exception")
+          status.code = StatusCodes.FAILED
+        }
+    }    
+    
+    return status
+  }
+    
   def setBlobMetadata(  blob:Blob, container:String ): Status = 
   {
     
@@ -408,7 +457,7 @@ class AzureBlobStorage( accName:String, k: String )
 
     try
     {
-      var header = Map[String, String]()
+      var header = new HashMap[String, String]()
       header( metaName ) = metaValue
     
       var blob = new Blob( blobName )
@@ -429,7 +478,7 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   }  
 
-  def setBlobMetadata(  blobName:String, container:String,  keyValuePairs: Map[ String, String ] ): Status = 
+  def setBlobMetadata(  blobName:String, container:String,  keyValuePairs: HashMap[ String, String ] ): Status = 
   {
     
     var status = new Status()

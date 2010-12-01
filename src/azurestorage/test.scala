@@ -5,7 +5,7 @@ package azurestorage
 import scala.collection.mutable.ListBuffer
 
 
-import scala.collection.mutable.Map
+import scala.collection.mutable._
 import azurestorage._
 import azurestorage.Datatypes._
 import net.lag.configgy.Configgy
@@ -73,7 +73,51 @@ object basicblobtest
     }    
   }
   
-  
+  def getBlobProperties() =
+  {
+    // assumption that setBlob has been run first :)
+    var res = as.getBlobProperties( testContainerName, "bar")
+    
+    var status = res._1
+    
+    if (status.successful)
+    {
+      var blob = res._2
+      println("getBlobProperties successful " +blob.metaData.toString() )
+      
+    }
+    else
+    {
+      println("getBlobProperties NOT successful")
+    }    
+  }
+
+  def setBlobProperties() =
+  {
+    // assumption that setBlob has been run first :)
+    
+    var blob = new Blob("bar")
+    var hm = new HashMap[String, String]()
+    hm("foo") = "bar"
+    hm("kenny") = "kjk"
+    
+    blob.metaData = hm
+    
+    var status = as.setBlobProperties( testContainerName, blob)
+
+    
+    if (status.successful)
+    {
+
+      println("setBlobProperties successful ")
+      
+    }
+    else
+    {
+      println("setBlobProperties NOT successful")
+    }    
+  }
+      
   def createContainer() =
   {
     var status = as.createContainer(  testContainerName2 )
@@ -153,10 +197,13 @@ object basicblobtest
   {
 
     //deleteContainer()
-    setBlob()
+    //setBlob()
     
     
-    getBlob()
+    //getBlob()
+    setBlobProperties()
+    getBlobProperties()
+    
     /*
     createContainer()
     listContainers()

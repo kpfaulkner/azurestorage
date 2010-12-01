@@ -75,8 +75,8 @@ class AzureStorageBlobDAO
     
     var status = new Status()
 
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name + canonicalResourceExtra
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + canonicalResourceExtra
+    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
     
     var client = new HttpClient()
     method.setURI( new URI( url ) )
@@ -84,7 +84,7 @@ class AzureStorageBlobDAO
     AzureStorageCommon.addMetadataToMethod( method, blob.metaData )
     
     // blob type. 
-    method.setRequestHeader( new Header( BlobProperty.blobType, blob.blobProperties( BlobProperty.blobType ) ) )
+    // method.setRequestHeader( new Header( BlobProperty.blobType, blob.metaData( BlobProperty.blobType ) ) )
     
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, blob.data )
     
@@ -145,7 +145,6 @@ class AzureStorageBlobDAO
     blob.metaData = metadata
  
     status.code = res   
-    
     return ( status, blob )
   }
   
@@ -187,7 +186,7 @@ class AzureStorageBlobDAO
     status = res._1
     var blob = res._2
     
-    if (res == StatusCodes.GET_BLOB_PROPERTIES_SUCCESS)
+    if (status.code == StatusCodes.GET_BLOB_PROPERTIES_SUCCESS)
     {
       status.successful = true
     }
@@ -196,7 +195,7 @@ class AzureStorageBlobDAO
   }
 
   
-  // basically the same as getproperties... but just limiting a bit.
+  // Get blob metadata
   def getBlobMetadata( accountName:String, key:String, container: String, blobName: String ): ( Status, Blob ) =
   {
   
@@ -205,7 +204,7 @@ class AzureStorageBlobDAO
     var blob:Blob = null
     var status = new Status()
 
-    var res = getBlobProperties( accountName, key, container, blobName+"?comp=metadata")
+    var res = getBlobProperties( accountName, key, container, blobName+"comp=metadata")
     
     status = res._1
     blob = res._2
@@ -221,6 +220,27 @@ class AzureStorageBlobDAO
     return ( status, blob )
   }
 
+
+  def setBlobProperties( accountName:String, key:String, container:String,  blob:Blob ) : Status =
+  {
+    
+    log.info("AzureStorageBlobDAO::setBlobProperties start")
+        
+    var status = new Status()
+
+    var method = new PutMethod(  )
+    
+    status = genericSet( method, accountName, key, container, "comp=properties", blob )
+    
+    if (status.code == StatusCodes.SET_BLOB_PROPERTIES_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+
+  }
+  
   // should reuse setContainerMetadata....
   //def setBlobMetadata( accountName:String, key:String, container:String, blobName:String, keyValuePairs: Map[ String, String] ): Status = 
   def setBlobMetadata( accountName:String, key:String, container:String,  blob:Blob ) : Status =
