@@ -429,7 +429,7 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   }
     
-  def setBlobMetadata(  blob:Blob, container:String ): Status = 
+  def setBlobMetadata(  container:String ,  blob:Blob): Status = 
   {
     
     var status = new Status()
@@ -450,7 +450,7 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   }  
   
-  def setBlobMetadata(  blobName:String, container:String,  metaName:String, metaValue:String  ): Status = 
+  def setBlobMetadata(  container:String, blobName:String,  metaName:String, metaValue:String  ): Status = 
   {
     
     var status = new Status()
@@ -478,7 +478,7 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   }  
 
-  def setBlobMetadata(  blobName:String, container:String,  keyValuePairs: HashMap[ String, String ] ): Status = 
+  def setBlobMetadata( container:String,  blobName:String,  keyValuePairs: HashMap[ String, String ] ): Status = 
   {
     
     var status = new Status()
@@ -529,6 +529,34 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   } 
   
-  
+
+  // works.
+  def getBlobMetadata(   container:String ,blobName:String): ( Status, Blob ) = 
+  {
+    
+    var status = new Status()
+    var blob:Blob= null
+    
+    try
+    {
+      var res = blobDao.getBlobMetadata( accountName, key, container, blobName )
+      
+      status = res._1
+      blob = res._2
+     
+      log.debug("status code is " + status.code.toString() ) 
+    }
+    catch
+    {
+      // nasty general catch...
+      case ex: Exception => {
+          log.error("AzureBlobStorage::getBlobMetadata exception")
+          status.code = StatusCodes.FAILED
+        }
+    }    
+    
+    return ( status, blob )
+  }
+    
   
 }

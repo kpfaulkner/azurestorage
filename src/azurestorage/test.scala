@@ -72,7 +72,26 @@ object basicblobtest
       println("getBlob NOT successful")
     }    
   }
-  
+
+  def getBlobMetadata() =
+  {
+    // assumption that setBlob has been run first :)
+    var res = as.getBlobMetadata( testContainerName, "bar")
+    
+    var status = res._1
+    
+    if (status.successful)
+    {
+      var blob = res._2
+      println("getBlobMetadata successful " +blob.metaData.toString() )
+      
+    }
+    else
+    {
+      println("getBlobMetadata NOT successful")
+    }    
+  }  
+
   def getBlobProperties() =
   {
     // assumption that setBlob has been run first :)
@@ -89,6 +108,31 @@ object basicblobtest
     else
     {
       println("getBlobProperties NOT successful")
+    }    
+  }
+  def setBlobMetadata() =
+  {
+    // assumption that setBlob has been run first :)
+    
+    var blob = new Blob("bar")
+    var hm = new HashMap[String, String]()
+    hm("aaaa") = "bar"
+    hm("bbbb") = "kjk"
+    
+    blob.metaData = hm
+    
+    var status = as.setBlobMetadata( testContainerName, blob )
+
+    
+    if (status.successful)
+    {
+
+      println("setBlobMetadata successful ")
+      
+    }
+    else
+    {
+      println("setBlobMetadata NOT successful")
     }    
   }
 
@@ -203,6 +247,8 @@ object basicblobtest
     //getBlob()
     setBlobProperties()
     getBlobProperties()
+    setBlobMetadata()
+    getBlobMetadata()
     
     /*
     createContainer()

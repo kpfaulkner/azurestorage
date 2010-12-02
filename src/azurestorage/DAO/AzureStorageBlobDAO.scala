@@ -89,7 +89,8 @@ class AzureStorageBlobDAO
     // method.setRequestHeader( new Header( BlobProperty.blobType, blob.metaData( BlobProperty.blobType ) ) )
     
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, blob.data )
-    
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )    
     var res = client.executeMethod( method )    
     var responseBody = method.getResponseBodyAsString()
 
@@ -121,20 +122,30 @@ class AzureStorageBlobDAO
     return status
   }
   
-  def genericGet( method:HttpMethodBase, accountName:String, key:String, container: String, blobName: String ): ( Status, Blob ) =
+  def genericGet( method:HttpMethodBase, accountName:String, key:String, container: String, blobName: String ,canonicalResourceExtra: String): ( Status, Blob ) =
   {
     log.info("AzureStorageBlobDAO::genericGet start")
     
     var status = new Status()
     
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blobName
-    var url = "http://"+accountName+baseBlobURL++"/"+container+"/"+blobName
-    
+    //var canonicalResource = "/"+accountName+"/"+container+"/"+blobName
+    //var url = "http://"+accountName+baseBlobURL++"/"+container+"/"+blobName
+    var canonicalResource = "/"+accountName+"/"+container+"/"+blobName 
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blobName 
+    if ( canonicalResourceExtra != "" )
+    {
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":")
+      url += "?"+canonicalResourceExtra
+    }
+
     var client = new HttpClient()
     method.setURI( new URI( url ) )
     
     AzureStorageCommon.addMetadataToMethod( method, new HashMap[String,String]() )
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null)
+    
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )
         
     var res = client.executeMethod( method )    
     var h = method.getResponseHeaders()
@@ -161,7 +172,7 @@ class AzureStorageBlobDAO
     
     var method = new GetMethod( )
     
-    var res = genericGet( method, accountName, key, container, blobName  )
+    var res = genericGet( method, accountName, key, container, blobName,""  )
     
     status = res._1
     var blob = res._2
@@ -184,7 +195,7 @@ class AzureStorageBlobDAO
     
     var method = new HeadMethod( )
     
-    var res = genericGet( method, accountName, key, container, blobName  )
+    var res = genericGet( method, accountName, key, container, blobName,""  )
     
     status = res._1
     var blob = res._2
@@ -208,22 +219,24 @@ class AzureStorageBlobDAO
   
     log.info("AzureStorageBlobDAO::getBlobMetadata start")
     
-    var blob:Blob = null
     var status = new Status()
-
-    var res = getBlobProperties( accountName, key, container, blobName+"comp=metadata")
+    
+    var method = new HeadMethod( )
+    
+    var res = genericGet( method, accountName, key, container, blobName,"comp=metadata"  )
     
     status = res._1
-    blob = res._2
+    var blob = res._2
     
-    if (res == StatusCodes.GET_BLOB_METADATA_SUCCESS)
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+    
+    if (status.code == StatusCodes.GET_BLOB_METADATA_SUCCESS)
     {
       status.successful = true
-    } else
-    {
-      // overwriting the potentially "true" set by getBlobProperties.
-      status.successful = false
     }
+    
     return ( status, blob )
   }
 
@@ -263,10 +276,10 @@ class AzureStorageBlobDAO
     //blob.data = null
     
     var method = new PutMethod(  )
-    var entity = new ByteArrayRequestEntity( blob.data )
-    method.setRequestEntity( entity )
+    //var entity = new ByteArrayRequestEntity( blob.data )
+    //method.setRequestEntity( entity )
     
-    status = genericSet( method, accountName, key, container, "?comp=metadata", blob )
+    status = genericSet( method, accountName, key, container, "comp=metadata", blob )
     
     if (status.code == StatusCodes.SET_BLOB_METADATA_SUCCESS)
     {
