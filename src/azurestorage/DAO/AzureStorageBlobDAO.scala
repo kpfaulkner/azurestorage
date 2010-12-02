@@ -66,7 +66,8 @@ class AzureStorageBlobDAO
 
   val log = Logger.get
   
-  
+
+    
   // see if I can make a generic set.
   def genericSet( method:HttpMethodBase, accountName:String, key:String, container: String, canonicalResourceExtra: String, blob: Blob ): Status =
   {
@@ -77,9 +78,16 @@ class AzureStorageBlobDAO
 
     // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
     // go figure....
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra.replace("=",":")
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
-    
+    //var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra.replace("=",":")
+    //var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
+    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name 
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name 
+    if ( canonicalResourceExtra != "" )
+    {
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":")
+      url += "?"+canonicalResourceExtra
+    }
+
     var client = new HttpClient()
     method.setURI( new URI( url ) )
     
@@ -250,7 +258,7 @@ class AzureStorageBlobDAO
 
     var method = new PutMethod(  )
     
-    status = genericSet( method, accountName, key, container, "comp=properties", blob )
+    status = genericSet( method, accountName, key, container, "", blob )
     
     if (status.code == StatusCodes.SET_BLOB_PROPERTIES_SUCCESS)
     {
@@ -260,7 +268,51 @@ class AzureStorageBlobDAO
     return status
 
   }
-  
+
+  def deleteBlob( accountName:String, key:String, container:String,  blobName:String) : Status =
+  {
+    
+    log.info("AzureStorageBlobDAO::deleteBlob start")
+        
+    var status = new Status()
+    var method = new DeleteMethod(  )
+
+    // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
+    // go figure....
+    //var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra.replace("=",":")
+    //var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
+    var canonicalResource = "/"+accountName+"/"+container+"/"+blobName 
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blobName 
+
+
+    var client = new HttpClient()
+    method.setURI( new URI( url ) )
+    
+    AzureStorageCommon.addMetadataToMethod( method, new HashMap[String, String]() )
+    
+    // blob type. 
+    // method.setRequestHeader( new Header( BlobProperty.blobType, blob.metaData( BlobProperty.blobType ) ) )
+    
+    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null )
+
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )    
+    var res = client.executeMethod( method )    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+
+    status.code = res
+    
+    if (status.code == StatusCodes.DELETE_BLOB_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+
+  }
+    
   // should reuse setContainerMetadata....
   //def setBlobMetadata( accountName:String, key:String, container:String, blobName:String, keyValuePairs: Map[ String, String] ): Status = 
   def setBlobMetadata( accountName:String, key:String, container:String,  blob:Blob ) : Status =

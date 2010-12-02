@@ -73,6 +73,25 @@ object basicblobtest
     }    
   }
 
+  def deleteBlob() =
+  {
+    // assumption that setBlob has been run first :)
+    var status = as.deleteBlob( testContainerName, "bar")
+    
+
+    
+    if (status.successful)
+    {
+    
+      println("deleteBlob successful "  )
+      
+    }
+    else
+    {
+      println("deleteBlob NOT successful")
+    }    
+  }
+
   def getBlobMetadata() =
   {
     // assumption that setBlob has been run first :)
@@ -241,14 +260,15 @@ object basicblobtest
   {
 
     //deleteContainer()
-    //setBlob()
+    setBlob()
     
     
     //getBlob()
-    setBlobProperties()
-    getBlobProperties()
+    //setBlobProperties()
+    //getBlobProperties()
     setBlobMetadata()
     getBlobMetadata()
+    deleteBlob()
     
     /*
     createContainer()

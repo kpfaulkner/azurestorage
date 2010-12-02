@@ -304,7 +304,29 @@ class AzureBlobStorage( accName:String, k: String )
     
     return status
   }
+
+  def deleteBlob( container: String, blobName: String ):  Status  =
+  {
   
+    
+    var status = new Status()
+    
+    try
+    {
+      status = blobDao.deleteBlob( accountName, key, container, blobName )
+    }
+    catch
+    {
+      // nasty general catch...
+      case ex: Exception => {
+          log.error("AzureBlobStorage::deleteBlob exception")
+          status.code = StatusCodes.FAILED
+        }
+    }  
+    
+    return status
+  }
+    
   def getBlob( container: String, blobName: String ): ( Status, Blob ) =
   {
   
