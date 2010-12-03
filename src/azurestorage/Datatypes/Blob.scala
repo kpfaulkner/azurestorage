@@ -65,6 +65,7 @@ class Blob( blobName:String )
   var name:String = blobName
   
   // combined properties and metadata for blob.
+  // should I split them out?
   var metaData = new HashMap[String, String]()
 
   setupDefaultProperties( )

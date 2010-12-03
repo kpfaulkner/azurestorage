@@ -580,5 +580,27 @@ class AzureBlobStorage( accName:String, k: String )
     return ( status, blob )
   }
     
-  
+  def listBlobs( containerName:String ): ( Status, List[Blob] ) = 
+  {
+    var status = new Status()
+    var l = List[Blob]()
+    
+    try
+    {
+      var res  = blobDao.listBlobs( accountName, key, containerName )
+      
+      status = res._1
+      l = res._2
+    }
+    catch
+    {
+      // nasty general catch...
+      case ex: Exception => {
+          log.error("AzureBlobStorage::listBlobs exception " + ex.toString() )
+          status.code = StatusCodes.FAILED
+        }
+    }
+    
+    return (status, l )
+  }
 }

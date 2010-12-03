@@ -50,6 +50,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.security.SignatureException
 import javax.crypto.Mac
+import scala.xml.XML
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64._
 import org.apache.commons.codec.binary.Base64
@@ -138,11 +139,18 @@ class AzureStorageBlobDAO
     
     //var canonicalResource = "/"+accountName+"/"+container+"/"+blobName
     //var url = "http://"+accountName+baseBlobURL++"/"+container+"/"+blobName
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blobName 
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blobName 
+    var canonicalResource = "/"+accountName+"/"+container
+    var url = "http://"+accountName+baseBlobURL+"/"+container
+
+    if (blobName != null && blobName != "")
+    {
+      canonicalResource += "/"+blobName
+      url += "/" + blobName
+    }
+
     if ( canonicalResourceExtra != "" )
     {
-      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":")
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":").replace("&","\n")
       url += "?"+canonicalResourceExtra
     }
 
@@ -341,5 +349,83 @@ class AzureStorageBlobDAO
     return status
 
   }  
-  
+
+  def listBlobs( accountName:String, key:String, containerName:String  ): ( Status, List[Blob] ) = 
+  {
+    log.info("AzureStorageBlobDAO::listBlobs start")  
+    
+    var url = "http://"+accountName+baseBlobURL+"/?restype=container&include=metadata&comp=list"
+    var result = List[Blob]()
+    var status = new Status()
+
+    var method = new GetMethod( )
+    
+    var res = genericGet( method, accountName, key, containerName, "","comp=list&include=metadata&restype=container"  )
+
+    var responseBody = method.getResponseBodyAsString()
+
+    var xml = responseBody.substring(3)
+
+    var blobList = parseBlobList( xml )
+
+    return (status, blobList )
+
+  }
+
+  private def hackyParseTags( xml: String ): HashMap[String, String ] =
+  {
+    log.debug("hackyParseTags start" )
+
+    var hm = new HashMap[String, String]()
+
+    if ( xml != "")
+    {
+      var e = XML.loadString( xml )
+      
+      for ( child <- e.child )
+      {
+        var tag = child.label
+        var data = child.text
+        hm( tag ) = data
+      }
+    }
+
+    return hm
+  }
+
+  private def parseBlobList( xml: String ): List[Blob] = 
+  {
+    log.info("AzureStorageBlobDAO::parseBlobList start")  
+    
+    var l = List[Blob]()
+    
+    var xmlNode = XML.loadString( xml )
+    
+    var blobList = xmlNode \\ "Blob"
+    
+    for ( blob <- blobList )
+    {
+
+      // dont bother with last mod time or etag *yet*
+      var name = (blob \ "Name").text
+      var b = new Blob( name )
+      
+      // get properties
+      var properties = ( blob \\ "Properties")
+      var propertiesHM = hackyParseTags( properties.toString() )
+
+      // get metadata
+      var metadata = ( blob \\ "Metadata")
+      var metadataHM = hackyParseTags( metadata.toString() )
+      
+      // merge
+      metadataHM ++ propertiesHM
+      b.metaData = metadataHM
+
+      l += b
+    }
+    
+    return l
+    
+  }
 }

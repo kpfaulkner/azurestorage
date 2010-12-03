@@ -72,6 +72,23 @@ object basicblobtest
       println("getBlob NOT successful")
     }    
   }
+  def listBlobs() =
+  {
+    // assumption that setBlob has been run first :)
+    var res = as.listBlobs( testContainerName )
+    
+    var status = res._1
+    
+    if (status.successful)
+    {
+      println("listBlobs successful " )
+      
+    }
+    else
+    {
+      println("listBlobs NOT successful")
+    }    
+  }
 
   def deleteBlob() =
   {
@@ -265,11 +282,13 @@ object basicblobtest
     
     //getBlob()
     //setBlobProperties()
-    //getBlobProperties()
     setBlobMetadata()
     getBlobMetadata()
-    deleteBlob()
-    
+    //getBlobProperties()
+    listBlobs()
+
+    //deleteBlob()
+
     /*
     createContainer()
     listContainers()
