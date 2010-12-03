@@ -28,12 +28,12 @@ object basicblobtest
   var testContainerName2 = "testcontainer2"
   
   
-  def setBlob() =
+  def setBlob( name:String ) =
   {
   
       var data = "dummydata".getBytes()
       
-      var b = new Blob("bar", data)
+      var b = new Blob( name , data)
       
       // create container?
       // yes contaminates results (if it fails) still, required.
@@ -83,6 +83,11 @@ object basicblobtest
     {
       println("listBlobs successful " )
       
+      var blobs = res._2
+      for ( b <- blobs )
+      {
+        println("blob " + b.toString() )
+      }
     }
     else
     {
@@ -277,7 +282,10 @@ object basicblobtest
   {
 
     //deleteContainer()
-    setBlob()
+    setBlob("bar")
+    setBlob("foo")
+    setBlob("abc")
+    
     
     
     //getBlob()

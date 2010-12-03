@@ -85,4 +85,13 @@ class Blob( blobName:String )
   {
     metaData( BlobProperty.blobType ) = BlobType.BLOCKBLOB
   }
+
+  // debugging crap
+  override def toString(): String =
+  {
+    var s = "name: " + name
+    s += "\nmetadata: " + metaData.toString() 
+    
+    return s  
+  }
 }

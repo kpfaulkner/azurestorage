@@ -362,11 +362,18 @@ class AzureStorageBlobDAO
     
     var res = genericGet( method, accountName, key, containerName, "","comp=list&include=metadata&restype=container"  )
 
+    status = res._1
+
     var responseBody = method.getResponseBodyAsString()
 
     var xml = responseBody.substring(3)
 
     var blobList = parseBlobList( xml )
+ 
+    if (status.code == StatusCodes.GET_BLOB_LIST_SUCCESS)
+    {
+      status.successful = true
+    }
 
     return (status, blobList )
 
