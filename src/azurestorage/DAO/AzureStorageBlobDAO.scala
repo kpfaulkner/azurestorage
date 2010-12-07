@@ -70,7 +70,7 @@ class AzureStorageBlobDAO
 
     
   // see if I can make a generic set.
-  def genericSet( method:HttpMethodBase, accountName:String, key:String, container: String, canonicalResourceExtra: String, blob: Blob ): Status =
+  def genericSet( method:HttpMethodBase, accountName:String, key:String, container: String, canonicalResourceExtra: String, name:String, metaData:HashMap[String, String], data: Array[Byte] ): Status =
   {
     
     log.info("AzureStorageBlobDAO::genericSet start")
@@ -79,10 +79,8 @@ class AzureStorageBlobDAO
 
     // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
     // go figure....
-    //var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name +"\n"+canonicalResourceExtra.replace("=",":")
-    //var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name + "?"+canonicalResourceExtra
-    var canonicalResource = "/"+accountName+"/"+container+"/"+blob.name 
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+blob.name 
+    var canonicalResource = "/"+accountName+"/"+container+"/"+name 
+    var url = "http://"+accountName+baseBlobURL+"/"+container+"/"+name 
     if ( canonicalResourceExtra != "" )
     {
       canonicalResource += "\n"+canonicalResourceExtra.replace("=",":")
@@ -92,12 +90,17 @@ class AzureStorageBlobDAO
     var client = new HttpClient()
     method.setURI( new URI( url ) )
     
-    AzureStorageCommon.addMetadataToMethod( method, blob.metaData )
+    AzureStorageCommon.addMetadataToMethod( method, metaData )
     
-    // blob type. 
-    // method.setRequestHeader( new Header( BlobProperty.blobType, blob.metaData( BlobProperty.blobType ) ) )
+    // set data.
+    if (data != null )
+    {
+      var entity = new ByteArrayRequestEntity( data )
+      method.setRequestEntity( entity )
+    }
+
     
-    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, blob.data )
+    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, data )
     // setup proxy.
     AzureStorageCommon.setupProxy( client )    
     var res = client.executeMethod( method )    
@@ -111,17 +114,17 @@ class AzureStorageBlobDAO
   }
   
   
-  def setBlob( accountName:String, key:String, container: String, blob: Blob ): Status =
+  def putBlob( accountName:String, key:String, container: String, blob: Blob ): Status =
   {
-    log.info("AzureStorageBlobDAO::setBlob start")
+    log.info("AzureStorageBlobDAO::putBlob start")
     
     var status = new Status()
  
     var method = new PutMethod(  )
-    var entity = new ByteArrayRequestEntity( blob.data )
-    method.setRequestEntity( entity )
+    //var entity = new ByteArrayRequestEntity( blob.data )
+    //method.setRequestEntity( entity )
     
-    status = genericSet( method, accountName, key, container, "", blob )
+    status = genericSet( method, accountName, key, container, "", blob.name, blob.metaData, blob.data )
     
     if (status.code == StatusCodes.SET_BLOB_SUCCESS)
     {
@@ -266,7 +269,7 @@ class AzureStorageBlobDAO
 
     var method = new PutMethod(  )
     
-    status = genericSet( method, accountName, key, container, "", blob )
+    status = genericSet( method, accountName, key, container, "", blob.name, blob.metaData, blob.data )
     
     if (status.code == StatusCodes.SET_BLOB_PROPERTIES_SUCCESS)
     {
@@ -339,7 +342,7 @@ class AzureStorageBlobDAO
     //var entity = new ByteArrayRequestEntity( blob.data )
     //method.setRequestEntity( entity )
     
-    status = genericSet( method, accountName, key, container, "comp=metadata", blob )
+    status = genericSet( method, accountName, key, container, "comp=metadata", blob.name, blob.metaData, blob.data )
     
     if (status.code == StatusCodes.SET_BLOB_METADATA_SUCCESS)
     {
@@ -435,4 +438,83 @@ class AzureStorageBlobDAO
     return l
     
   }
+
+  def putBlock( accountName:String, key:String, container: String, block: Block ): Status =
+  {
+    log.info("AzureStorageBlobDAO::putBlock start")
+    
+    var status = new Status()
+ 
+    var method = new PutMethod(  )
+    //var entity = new ByteArrayRequestEntity( block.data )
+    //method.setRequestEntity( entity )
+    
+    var urlExtra = "comp=block&blockid="+ block.status.kId
+
+    status = genericSet( method, accountName, key, container, urlExtra, block.blobName, null, block.data )
+    
+    if (status.code == StatusCodes.PUT_BLOCK_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+  }
+
+  def generateBlockList( blockList: List[ BlockStatus]): String =
+  {
+    log.info("AzureStorageBlobDAO::generateBlockList start")
+    
+    var s = "<BlockList>"
+
+    for ( i <- blockList )
+    {
+      s += "<"+i.statusCode+">"+i.blockId+"</"+i.statusCode+">"
+    }
+
+    s += "</BlockList>"
+
+    return s
+
+  }
+
+
+  // put block list.
+  // cover blob holds the information about the blob as a whole once its formed.
+  // eg all the propreties and metadata stuff.
+  def putBlockList( accountName:String, key:String, container: String, blobName:String, blockList: List[ BlockStatus], metaData: HashMap[ String, String] ): Status =
+  {
+    log.info("AzureStorageBlobDAO::putBlockList start")
+    
+    var status = new Status()
+ 
+    var method = new PutMethod(  )
+
+    // make sure the content type.
+    hashMap("Content-Type") = "text/plain; charset=UTF-8"
+
+    // generated list of blocks.
+    var blockInfo = generateBlockList( blockList )
+
+    // block info....
+    //var entity = new ByteArrayRequestEntity( blockInfo.getBytes() )
+    //method.setRequestEntity( entity )
+    
+    var urlExtra = "comp=blocklist"
+
+    status = genericSet( method, accountName, key, container, urlExtra, blobName, metaData, blockInfo.getBytes() )
+    
+    if (status.code == StatusCodes.PUT_BLOCK_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+  }
+  
+  def getBlockList( container: String, blobName: String ): ( Status, Array[ String] ) =
+  {
+    
+  }
+
 }

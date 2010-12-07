@@ -28,7 +28,7 @@ object basicblobtest
   var testContainerName2 = "testcontainer2"
   
   
-  def setBlob( name:String ) =
+  def putBlob( name:String ) =
   {
   
       var data = "dummydata".getBytes()
@@ -40,7 +40,7 @@ object basicblobtest
       as.createContainer(  testContainerName )
 
       
-      var status = as.setBlob( testContainerName, b)    
+      var status = as.putBlob( testContainerName, b)    
       
       if (status.successful)
       {

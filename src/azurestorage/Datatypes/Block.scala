@@ -34,51 +34,32 @@ this software without specific prior written permission.
 package azurestorage.Datatypes
 
 
-
-// internal status codes. These are the ones that are returned by Azure....
-// Should we pass these onto the end consumer?
-object StatusCodes 
+object BlockStatusCode
 {
-  val SUCCESS = 0
-  val FAILED = 1
-  
-  // containers
-  val CREATE_CONTAINER_SUCCESS = 201
-  val DELETE_CONTAINER_SUCCESS = 202
-  val SET_CONTAINER_METADATA_SUCCESS = 200
-  val GET_CONTAINER_METADATA_SUCCESS = 200
-  val SET_CONTAINER_ACL_SUCCESS = 200
-  val GET_CONTAINER_ACL_SUCCESS = 200  
-  val LIST_CONTAINERS_SUCCESS = 200
-  
-  // blobs
-  val GET_BLOB_SUCCESS = 200
-  val SET_BLOB_SUCCESS = 201
-  val PUT_BLOCK_SUCCESS = 201
-  
-  val GET_BLOB_LIST_SUCCESS = 200
-  
-  val DELETE_BLOB_SUCCESS = 202
-  val DELETE_BLOB_ACCEPTED_SUCCESS = 202
-  val SET_BLOB_PROPERTIES_SUCCESS = 200  
-  val GET_BLOB_PROPERTIES_SUCCESS = 200
-  val GET_BLOB_METADATA_SUCCESS = 200
-  val SET_BLOB_METADATA_SUCCESS = 200
-  
+  val BLOCKLATEST = "Latest"
+  val BLOCKCOMMITTED = "Committed"
+  val BLOCKUNCOMMITTED = "Uncommitted"
+
 }
 
 
-
-// code should be external status code.... ie what azure gives us. 
-// BUT... we assign successful as true/false depending on what actually happened.
-// reason being that a success code might be different for various operations. 
-// ie for one action 200 might be success but for another 201 might be success.
-// This way the client only needs to check the boolean to see if everything is ok,
-// if its NOT successful then they can jump into the details of code/messages etc.
-class Status 
+class BlockStatus( blockId:String )
 {
-  var message:String = null
-  var code:Int = StatusCodes.SUCCESS
+  var blockId:String = blockId
+  var statusCode = BlockStatusCode.BLOCKLATEST  
+}
+
+
+class Block( blobName:String, bId:String )
+{
+
+  // entity holds block id and status of the block.
+  var status = BlockStatus( bId )
+
+  // blob the block is associated with.
+  var blobName:String = blobName
   
-  var successful:boolean = false
+  // here be data :)
+  var data:Array[Byte] = null
+
 }

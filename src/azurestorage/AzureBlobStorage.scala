@@ -284,20 +284,38 @@ class AzureBlobStorage( accName:String, k: String )
     return status
   }
   
-  def setBlob( container: String, blob: Blob ): Status =
+  // put a block. 
+  // 
+  def putBlock( container: String, block: Block ): Status =
+  {
+    
+  }
+
+  // put block list.
+  def putBlockList( container: String, blockList: Array[ String ], coverBlob:Blob ): Status =
+  {
+    
+  }
+  
+  def getBlockList( container: String, blobName: String ): ( Status, Array[ String] ) =
+  {
+    
+  }
+    
+  def putBlob( container: String, blob: Blob ): Status =
   {
     var status = new Status()
     
     try
     {
-      status = blobDao.setBlob( accountName, key, container, blob )
+      status = blobDao.putBlob( accountName, key, container, blob )
 
     }
     catch
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlob exception")
+          log.error("AzureBlobStorage::putBlob exception")
           status.code = StatusCodes.FAILED
         }
     }  
