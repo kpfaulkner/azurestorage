@@ -43,21 +43,21 @@ object BlockStatusCode
 }
 
 
-class BlockStatus( blockId:String )
+class BlockStatus( bId:String )
 {
-  var blockId:String = blockId
+  var blockId= bId
   var statusCode = BlockStatusCode.BLOCKLATEST  
 }
 
 
-class Block( blobName:String, bId:String )
+class Block( bName:String, bId:String )
 {
 
   // entity holds block id and status of the block.
-  var status = BlockStatus( bId )
+  var status = new BlockStatus( bId )
 
   // blob the block is associated with.
-  var blobName:String = blobName
+  var blobName:String = bName
   
   // here be data :)
   var data:Array[Byte] = null

@@ -219,11 +219,6 @@ object AzureStorageCommon
     //method.setRequestHeader( new Header("x-ms-date", dateHeader) )
     //method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
     
-    // if null, then make an empty hashmap
-    if ( keyValuePairs == null )
-    {
-      keyValuePairs = new HashMap[String, String]()
-    }
     
     keyValuePairs("x-ms-date") = dateHeader
     keyValuePairs("x-ms-version") = "2009-09-19"

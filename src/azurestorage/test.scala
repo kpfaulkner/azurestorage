@@ -282,9 +282,9 @@ object basicblobtest
   {
 
     //deleteContainer()
-    setBlob("bar")
-    setBlob("foo")
-    setBlob("abc")
+    putBlob("bar")
+    putBlob("foo")
+    putBlob("abc")
     
     
     

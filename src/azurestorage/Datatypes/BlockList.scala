@@ -51,7 +51,7 @@ class BlockList( blobName:String )
 
   // list of blocks... and types
   // should I be using Block class here or something more simple?
-  var blockIdList = new List[ Block ]()
+  var blockIdList =  List[ Block ]()
 
   setupDefaultProperties( )
   

@@ -92,14 +92,6 @@ class AzureStorageBlobDAO
     
     AzureStorageCommon.addMetadataToMethod( method, metaData )
     
-    // set data.
-    if (data != null )
-    {
-      var entity = new ByteArrayRequestEntity( data )
-      method.setRequestEntity( entity )
-    }
-
-    
     AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, data )
     // setup proxy.
     AzureStorageCommon.setupProxy( client )    
@@ -121,8 +113,8 @@ class AzureStorageBlobDAO
     var status = new Status()
  
     var method = new PutMethod(  )
-    //var entity = new ByteArrayRequestEntity( blob.data )
-    //method.setRequestEntity( entity )
+    var entity = new ByteArrayRequestEntity( blob.data )
+    method.setRequestEntity( entity )
     
     status = genericSet( method, accountName, key, container, "", blob.name, blob.metaData, blob.data )
     
@@ -339,8 +331,8 @@ class AzureStorageBlobDAO
     //blob.data = null
     
     var method = new PutMethod(  )
-    //var entity = new ByteArrayRequestEntity( blob.data )
-    //method.setRequestEntity( entity )
+    var entity = new ByteArrayRequestEntity( blob.data )
+    method.setRequestEntity( entity )
     
     status = genericSet( method, accountName, key, container, "comp=metadata", blob.name, blob.metaData, blob.data )
     
@@ -446,10 +438,10 @@ class AzureStorageBlobDAO
     var status = new Status()
  
     var method = new PutMethod(  )
-    //var entity = new ByteArrayRequestEntity( block.data )
-    //method.setRequestEntity( entity )
+    var entity = new ByteArrayRequestEntity( block.data )
+    method.setRequestEntity( entity )
     
-    var urlExtra = "comp=block&blockid="+ block.status.kId
+    var urlExtra = "comp=block&blockid="+ block.status.blockId
 
     status = genericSet( method, accountName, key, container, urlExtra, block.blobName, null, block.data )
     
@@ -491,14 +483,14 @@ class AzureStorageBlobDAO
     var method = new PutMethod(  )
 
     // make sure the content type.
-    hashMap("Content-Type") = "text/plain; charset=UTF-8"
+    metaData("Content-Type") = "text/plain; charset=UTF-8"
 
     // generated list of blocks.
     var blockInfo = generateBlockList( blockList )
 
     // block info....
-    //var entity = new ByteArrayRequestEntity( blockInfo.getBytes() )
-    //method.setRequestEntity( entity )
+    var entity = new ByteArrayRequestEntity( blockInfo.getBytes() )
+    method.setRequestEntity( entity )
     
     var urlExtra = "comp=blocklist"
 
@@ -514,7 +506,7 @@ class AzureStorageBlobDAO
   
   def getBlockList( container: String, blobName: String ): ( Status, Array[ String] ) =
   {
-    
+    return (null, null)
   }
 
 }

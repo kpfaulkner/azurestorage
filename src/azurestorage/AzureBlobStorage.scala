@@ -268,7 +268,7 @@ class AzureBlobStorage( accName:String, k: String )
       var blob = new Blob( destination )      
       blob.data = baos.toByteArray()
         
-      status = blobDao.setBlob( accountName, key, container, blob )
+      status = blobDao.putBlob( accountName, key, container, blob )
 
     }
     catch
@@ -288,18 +288,24 @@ class AzureBlobStorage( accName:String, k: String )
   // 
   def putBlock( container: String, block: Block ): Status =
   {
-    
+    var status = new Status()
+
+    return status
   }
 
   // put block list.
   def putBlockList( container: String, blockList: Array[ String ], coverBlob:Blob ): Status =
   {
-    
+        var status = new Status()
+
+    return status
   }
   
   def getBlockList( container: String, blobName: String ): ( Status, Array[ String] ) =
   {
-    
+        var status = new Status()
+
+    return ( status, null )
   }
     
   def putBlob( container: String, blob: Blob ): Status =
