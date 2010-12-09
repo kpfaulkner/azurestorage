@@ -387,20 +387,20 @@ object AzureBlobClient
     return status
   }  
   
-  def addBlobMetadata(  blobName: String, container:String,  metaName:String, metaValue:String  ): Status = 
+  def addBlobMetadata( context:AzureContext, blobName: String, containerName:String,  metaName:String, metaValue:String  ): Status = 
   {
     
     var status = new Status()
 
     try
     {
-      var resp = blobDao.getBlobMetadata( accountName, key, container, blobName )
+      var resp = blobDao.getBlobMetadata( context.accountName, context.key, containerName, blobName )
     
       var blob = resp._2
     
       blob.metaData( metaName) = metaValue
       
-      blobDao.setBlobMetadata( accountName, key, container, blob )
+      blobDao.setBlobMetadata( context.accountName, context.key, containerName, blob )
     }
     catch
     {
@@ -415,7 +415,7 @@ object AzureBlobClient
   
 
   // works.
-  def getBlobMetadata(   container:String ,blobName:String): ( Status, Blob ) = 
+  def getBlobMetadata(  context:AzureContext, containerName:String ,blobName:String): ( Status, Blob ) = 
   {
     
     var status = new Status()
@@ -423,7 +423,7 @@ object AzureBlobClient
     
     try
     {
-      var res = blobDao.getBlobMetadata( accountName, key, container, blobName )
+      var res = blobDao.getBlobMetadata( context.accountName, context.key, containerName, blobName )
       
       status = res._1
       blob = res._2
@@ -442,14 +442,14 @@ object AzureBlobClient
     return ( status, blob )
   }
     
-  def listBlobs( containerName:String ): ( Status, List[Blob] ) = 
+  def listBlobs( context:AzureContext, containerName:String ): ( Status, List[Blob] ) = 
   {
     var status = new Status()
     var l = List[Blob]()
     
     try
     {
-      var res  = blobDao.listBlobs( accountName, key, containerName )
+      var res  = blobDao.listBlobs( context.accountName, context.key, containerName )
       
       status = res._1
       l = res._2
