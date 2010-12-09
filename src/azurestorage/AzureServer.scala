@@ -45,31 +45,7 @@ import net.lag.logging.Logger
 
 object server1
 {
-   def main(args: Array[String]) =
-    {
-      Configgy.configure("azurestorage.cfg")
 
-      val log = Logger.get
-
-      var as = new AzureBlobStorage("<your acct name>", "<your key>")
-      //as.createContainer(  args(0) )
-      
-      //as.setContainerMetadata( args(0), "foo", "bar") 
-
-      //var resp = as.getContainerMetadata( args(0) ) 
-
-      //println("headers " + resp._2.toString() )
-
-      //var resp2 = as.deleteContainer( args(0) ) 
-
-      //println("xxxx " + resp2.toString() )
-
-
-      var resp3 = as.listContainers()
-      println("resp " + resp3.toString() )
-      
-      
-    }
 }
 
 

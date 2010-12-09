@@ -213,53 +213,6 @@ object AzureBlobClient
     
     return ( status, blob )
   }
-
-  // set container ACL via container string name.
-  def setContainerACL( context:AzureContext, containerName: String, ACLList:List[ ContainerACL ], isPublic:boolean ): Status =
-  {
-    var status = new Status()
-    
-    try
-    {
-      status = containerDao.setContainerACL( context.accountName, context.key, containerName, ACLList, isPublic )
-
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlob exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return status
-  }
-  
-  def getContainerACL( context:AzureContext, containerName:String ): (Status, List[ ContainerACL ] ) = 
-  {
-    var status = new Status()
-    
-    var l:List[ ContainerACL] = null
-    
-    try
-    {
-      var res = containerDao.getContainerACL( context.accountName, context.key, containerName )
-
-      status = res._1
-      l = res._2
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::getContainerACL exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return ( status, l )   
-  }
     
   
   ////////////// BLOBS ////////////////////

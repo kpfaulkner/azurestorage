@@ -30,6 +30,8 @@ object AzureLoader
   var key = Configgy.config.getString("key", null)
   var acct = Configgy.config.getString("account", null)
   
+  val context = new AzureContext( acct,key)
+
   val log = Logger.get
     
   val defaultPrivateContainer = Configgy.config.getString("default_private_container", "private")
@@ -100,9 +102,8 @@ object AzureLoader
            
       log.debug("copying " + filename + " to " + destination + " using container " + container )
      
-      var as = new AzureBlobStorage( acct, key )
       
-      var status = as.setBlobByFilename( container, filename, destination )
+      var status = AzureBlobClient.setBlobByFilename( context, container, filename, destination )
      
       if (status.code != StatusCodes.SET_BLOB_SUCCESS )
       {
@@ -132,9 +133,8 @@ object AzureLoader
       // just accept container name.... thats it.
       var container = args( 0 )
      
-      var as = new AzureBlobStorage( acct, key )
       
-      var status = as.createContainer( container )
+      var status = AzureContainerClient.createContainer( context, container )
      
       if (status.code != StatusCodes.SUCCESS )
       {

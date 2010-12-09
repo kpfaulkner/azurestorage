@@ -13,7 +13,7 @@ import net.lag.logging.Logger
 import scala.io.Source
 import java.util.Date
 
-object bAzureBlobClient.cblobtest
+object basicblobtest
 {
   Configgy.configure("azurestorage.cfg")
 
@@ -33,11 +33,11 @@ object bAzureBlobClient.cblobtest
   
       var data = "dummydata".getBytes()
       
-      var b = new Blob( context, name , data)
+      var b = new Blob(  name , data)
       
       // create container?
       // yes contaminates results (if it fails) still, required.
-      AzureBlobClient.createContainer(  testContainerName )
+      AzureContainerClient.createContainer( context, testContainerName )
 
       
       var status = AzureBlobClient.putBlob( context, testContainerName, b)    
@@ -156,7 +156,7 @@ object bAzureBlobClient.cblobtest
     // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
     
     var blob = new Blob("bar")
-    var hm = new HAzureBlobClient.Map[String, String]()
+    var hm = new HashMap[String, String]()
     hm("aaaa") = "bar"
     hm("bbbb") = "kjk"
     
@@ -182,7 +182,7 @@ object bAzureBlobClient.cblobtest
     // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
     
     var blob = new Blob("bar")
-    var hm = new HAzureBlobClient.Map[String, String]()
+    var hm = new HashMap[String, String]()
     hm("foo") = "bar"
     hm("kenny") = "kjk"
     
