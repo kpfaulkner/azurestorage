@@ -48,7 +48,7 @@ import java.io.ObjectInputStream
 import org.apache.commons.io.FilenameUtils
 
 
-class AzureContext( k:String, a:String)
+class AzureContext( a:String, k:String)
 {
   val key = k
   val accountName = a

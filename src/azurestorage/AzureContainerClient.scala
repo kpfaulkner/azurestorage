@@ -48,31 +48,22 @@ import java.io.ObjectInputStream
 import org.apache.commons.io.FilenameUtils
 
 
-class AzureContext( k:String, a:String)
-{
-  val key = k
-  val accountName = a
-}
-
-
-
 // main object for blob access.
-object AzureBlobStorage
+object AzureContainerClient
 {
   
-  val blobDao = new AzureStorageBlobDAO()
   val containerDao = new AzureStorageContainerDAO()
   
   Configgy.configure("azurestorage.cfg")
   val log = Logger.get
   
-  def createContainer(  container:String ): Status = 
+  def createContainer( context:AzureContext, containerName:String ): Status = 
   {
     var status = new Status()
   
     try
     {
-      status = containerDao.createContainer( accountName, key, container)
+      status = containerDao.createContainer( context.accountName, context.key, containerName )
     
     }
     catch 
@@ -88,14 +79,14 @@ object AzureBlobStorage
     return status
   }
 
-  def listContainers(  ): ( Status, List[Container] ) = 
+  def listContainers( context:AzureContext ): ( Status, List[Container] ) = 
   {
     var status = new Status()
     var l = List[Container]()
     
     try
     {
-      var res  = containerDao.listContainers( accountName, key )
+      var res  = containerDao.listContainers( context.accountName, context.key )
       
       status = res._1
       l = res._2
@@ -112,14 +103,14 @@ object AzureBlobStorage
     return (status, l )
   }
     
-  def deleteContainer(  container:String ): Status = 
+  def deleteContainer( context:AzureContext, containerName:String ): Status = 
   {
     
     var status = new Status()
     
     try
     {
-      containerDao.deleteContainer( accountName, key, container)
+      containerDao.deleteContainer( context.accountName, context.key, containerName )
     }
     catch
     {
@@ -133,7 +124,7 @@ object AzureBlobStorage
     return status
   }  
   
-  def setContainerMetadata(  container:String,  metaName:String, metaValue:String  ): Status = 
+  def setContainerMetadata( context:AzureContext, containerName:String,  metaName:String, metaValue:String  ): Status = 
   {
     
     var status = new Status()
@@ -141,9 +132,11 @@ object AzureBlobStorage
     try
     {
       var header = Map[String, String]()
+
+      // not sure I like the header instance being created at this level.
       header( metaName ) = metaValue
     
-      containerDao.setContainerMetadata( accountName, key, container, header )
+      containerDao.setContainerMetadata( context.accountName, context.key, containerName, header )
 
     }
     catch
@@ -158,14 +151,14 @@ object AzureBlobStorage
     return status
   }  
 
-  def setContainerMetadata(  container:String,  keyValuePairs: Map[ String, String ] ): Status = 
+  def setContainerMetadata(  context:AzureContext, containerName:String,  keyValuePairs: Map[ String, String ] ): Status = 
   {
     
     var status = new Status()
 
     try
     {
-      containerDao.setContainerMetadata( accountName, key, container, keyValuePairs )
+      containerDao.setContainerMetadata( context.accountName, context.key, containerName, keyValuePairs )
  
     }
     catch
@@ -180,20 +173,21 @@ object AzureBlobStorage
     return status
   }  
   
-  def addContainerMetadata(  container:String,  metaName:String, metaValue:String  ): Status = 
+  def addContainerMetadata(  context:AzureContext, containerName:String,  metaName:String, metaValue:String  ): Status = 
   {
     
     var status = new Status()
 
     try
     {
-      var resp = containerDao.getContainerMetadata( accountName, key, container )
+      var resp = containerDao.getContainerMetadata( context.accountName, context.key, containerName )
     
       var headers = resp._2
     
+      // not sure I like creating headers at this level. FIXME
       headers( metaName ) = metaValue
     
-      containerDao.setContainerMetadata( accountName, key, container, headers )
+      containerDao.setContainerMetadata( context.accountName, context.key, containerName, headers )
     }
     catch
     {
@@ -206,7 +200,7 @@ object AzureBlobStorage
     return status
   }    
     
-  def getContainerMetadata(  container:String ): ( Status, Map[String, String]  ) = 
+  def getContainerMetadata(  context:AzureContext, containerName:String ): ( Status, Map[String, String]  ) = 
   {
     
     var status = new Status()
@@ -215,7 +209,7 @@ object AzureBlobStorage
     
     try
     {
-      var resp = containerDao.getContainerMetadata( accountName, key, container)
+      var resp = containerDao.getContainerMetadata( context.accountName, context.key, containerName )
       status = resp._1
       metadata = resp._2
 
@@ -231,403 +225,4 @@ object AzureBlobStorage
     
     return ( status, metadata )
   }  
-  
-  
-  // filename is fully qualified.
-  // destination is the location within the container.
-  def setBlobByFilename( container: String, filename: String, destination:String ): Status =
-  {
-    var status = new Status()
-    
-    try
-    {
-      var inFile = new FileInputStream( filename )
-      
-      var buffer = new Array[Byte](1024)
-      var len = 0
-      var baos = new ByteArrayOutputStream()
-      var pos = 0
-      var done = false
-      while  ( !done )
-      {
-        len = inFile.read( buffer )
-  
-        if ( len > 0 )
-        {
-          baos.write( buffer, 0, len )
-          pos += len
-        }
-        else
-        {
-          done = true 
-        }
-      }
-     
-        
-      var basename = FilenameUtils.getName( filename )        
-
-      // blob name will just be the actual filename
-      //var blob = new Blob( basename )
-      var blob = new Blob( destination )      
-      blob.data = baos.toByteArray()
-        
-      status = blobDao.putBlob( accountName, key, container, blob )
-
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobByFilePath exception " + ex.toString() )
-          status.code = StatusCodes.FAILED
-          status.message = "Failed to set blob by filepath"
-        }
-    }  
-    
-    return status
-  }
-  
-  // put a block. 
-  // 
-  def putBlock( container: String, block: Block ): Status =
-  {
-    var status = new Status()
-
-    return status
-  }
-
-  // put block list.
-  def putBlockList( container: String, blockList: Array[ String ], coverBlob:Blob ): Status =
-  {
-        var status = new Status()
-
-    return status
-  }
-  
-  def getBlockList( container: String, blobName: String ): ( Status, Array[ String] ) =
-  {
-        var status = new Status()
-
-    return ( status, null )
-  }
-    
-  def putBlob( container: String, blob: Blob ): Status =
-  {
-    var status = new Status()
-    
-    try
-    {
-      status = blobDao.putBlob( accountName, key, container, blob )
-
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::putBlob exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return status
-  }
-
-  def deleteBlob( container: String, blobName: String ):  Status  =
-  {
-  
-    
-    var status = new Status()
-    
-    try
-    {
-      status = blobDao.deleteBlob( accountName, key, container, blobName )
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::deleteBlob exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return status
-  }
-    
-  def getBlob( container: String, blobName: String ): ( Status, Blob ) =
-  {
-  
-    var blob:Blob = null
-    
-    var status = new Status()
-    
-    try
-    {
-      var res = blobDao.getBlob( accountName, key, container, blobName )
-      status = res._1
-      blob = res._2
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::getBlob exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return ( status, blob )
-  }
-
-  // set container ACL via container string name.
-  def setContainerACL( container: String, ACLList:List[ ContainerACL ], isPublic:boolean ): Status =
-  {
-    var status = new Status()
-    
-    try
-    {
-      status = containerDao.setContainerACL( accountName, key, container, ACLList, isPublic )
-
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlob exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return status
-  }
-  
-  def getContainerACL( container:String ): (Status, List[ ContainerACL ] ) = 
-  {
-    var status = new Status()
-    
-    var l:List[ ContainerACL] = null
-    
-    try
-    {
-      var res = containerDao.getContainerACL( accountName, key, container )
-
-      status = res._1
-      l = res._2
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::getContainerACL exception")
-          status.code = StatusCodes.FAILED
-        }
-    }  
-    
-    return ( status, l )   
-  }
-    
-  
-  ////////////// BLOBS ////////////////////
-
-  // works.
-  def getBlobProperties(   container:String ,blobName:String): ( Status, Blob ) = 
-  {
-    
-    var status = new Status()
-    var blob:Blob= null
-    
-    try
-    {
-      var res = blobDao.getBlobProperties( accountName, key, container, blobName )
-      
-      status = res._1
-      blob = res._2
-     
-      log.debug("status code is " + status.code.toString() ) 
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::getBlobProperties exception")
-          status.code = StatusCodes.FAILED
-        }
-    }    
-    
-    return ( status, blob )
-  }
-
-  def setBlobProperties( container:String ,blob:Blob): Status = 
-  {
-    
-    var status = new Status()
-
-    try
-    {
-      status = blobDao.setBlobProperties( accountName, key, container, blob )
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobProperties exception")
-          status.code = StatusCodes.FAILED
-        }
-    }    
-    
-    return status
-  }
-    
-  def setBlobMetadata(  container:String ,  blob:Blob): Status = 
-  {
-    
-    var status = new Status()
-
-    try
-    {
-      status = blobDao.setBlobMetadata( accountName, key, container, blob )
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobMetadata exception")
-          status.code = StatusCodes.FAILED
-        }
-    }    
-    
-    return status
-  }  
-  
-  def setBlobMetadata(  container:String, blobName:String,  metaName:String, metaValue:String  ): Status = 
-  {
-    
-    var status = new Status()
-
-    try
-    {
-      var header = new HashMap[String, String]()
-      header( metaName ) = metaValue
-    
-      var blob = new Blob( blobName )
-      blob.metaData = header
-      
-      status = blobDao.setBlobMetadata( accountName, key, container, blob )
-
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobMetadata exception")
-          status.code = StatusCodes.FAILED
-        }
-    }    
-    
-    return status
-  }  
-
-  def setBlobMetadata( container:String,  blobName:String,  keyValuePairs: HashMap[ String, String ] ): Status = 
-  {
-    
-    var status = new Status()
-
-    try
-    {
-      var blob = new Blob( blobName )
-      blob.metaData = keyValuePairs
-      
-      status = blobDao.setBlobMetadata( accountName, key, container, blob )
- 
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::setContainerMetadata exception")
-          status.code = StatusCodes.FAILED
-        }
-    }        
-    
-    return status
-  }  
-  
-  def addBlobMetadata(  blobName: String, container:String,  metaName:String, metaValue:String  ): Status = 
-  {
-    
-    var status = new Status()
-
-    try
-    {
-      var resp = blobDao.getBlobMetadata( accountName, key, container, blobName )
-    
-      var blob = resp._2
-    
-      blob.metaData( metaName) = metaValue
-      
-      blobDao.setBlobMetadata( accountName, key, container, blob )
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::addBlobMetadata exception")
-          status.code = StatusCodes.FAILED
-        }
-    }        
-    return status
-  } 
-  
-
-  // works.
-  def getBlobMetadata(   container:String ,blobName:String): ( Status, Blob ) = 
-  {
-    
-    var status = new Status()
-    var blob:Blob= null
-    
-    try
-    {
-      var res = blobDao.getBlobMetadata( accountName, key, container, blobName )
-      
-      status = res._1
-      blob = res._2
-     
-      log.debug("status code is " + status.code.toString() ) 
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::getBlobMetadata exception")
-          status.code = StatusCodes.FAILED
-        }
-    }    
-    
-    return ( status, blob )
-  }
-    
-  def listBlobs( containerName:String ): ( Status, List[Blob] ) = 
-  {
-    var status = new Status()
-    var l = List[Blob]()
-    
-    try
-    {
-      var res  = blobDao.listBlobs( accountName, key, containerName )
-      
-      status = res._1
-      l = res._2
-    }
-    catch
-    {
-      // nasty general catch...
-      case ex: Exception => {
-          log.error("AzureBlobStorage::listBlobs exception " + ex.toString() )
-          status.code = StatusCodes.FAILED
-        }
-    }
-    
-    return (status, l )
-  }
 }

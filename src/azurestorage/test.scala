@@ -13,7 +13,7 @@ import net.lag.logging.Logger
 import scala.io.Source
 import java.util.Date
 
-object basicblobtest
+object bAzureBlobClient.cblobtest
 {
   Configgy.configure("azurestorage.cfg")
 
@@ -22,7 +22,7 @@ object basicblobtest
   
   val log = Logger.get
 
-  var as = new AzureBlobStorage( acct, key )  
+  var context = new AzureContext( acct, key )  
   
   var testContainerName = "testcontainer"
   var testContainerName2 = "testcontainer2"
@@ -33,14 +33,14 @@ object basicblobtest
   
       var data = "dummydata".getBytes()
       
-      var b = new Blob( name , data)
+      var b = new Blob( context, name , data)
       
       // create container?
       // yes contaminates results (if it fails) still, required.
-      as.createContainer(  testContainerName )
+      AzureBlobClient.createContainer(  testContainerName )
 
       
-      var status = as.putBlob( testContainerName, b)    
+      var status = AzureBlobClient.putBlob( context, testContainerName, b)    
       
       if (status.successful)
       {
@@ -56,8 +56,8 @@ object basicblobtest
   
   def getBlob() =
   {
-    // assumption that setBlob has been run first :)
-    var res = as.getBlob( testContainerName, "bar")
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
+    var res = AzureBlobClient.getBlob( context, testContainerName, "bar")
     
     var status = res._1
     
@@ -74,8 +74,8 @@ object basicblobtest
   }
   def listBlobs() =
   {
-    // assumption that setBlob has been run first :)
-    var res = as.listBlobs( testContainerName )
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
+    var res = AzureBlobClient.listBlobs( context, testContainerName )
     
     var status = res._1
     
@@ -97,8 +97,8 @@ object basicblobtest
 
   def deleteBlob() =
   {
-    // assumption that setBlob has been run first :)
-    var status = as.deleteBlob( testContainerName, "bar")
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
+    var status = AzureBlobClient.deleteBlob(context,  testContainerName, "bar")
     
 
     
@@ -116,8 +116,8 @@ object basicblobtest
 
   def getBlobMetadata() =
   {
-    // assumption that setBlob has been run first :)
-    var res = as.getBlobMetadata( testContainerName, "bar")
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
+    var res = AzureBlobClient.getBlobMetadata(context,  testContainerName, "bar")
     
     var status = res._1
     
@@ -135,8 +135,8 @@ object basicblobtest
 
   def getBlobProperties() =
   {
-    // assumption that setBlob has been run first :)
-    var res = as.getBlobProperties( testContainerName, "bar")
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
+    var res = AzureBlobClient.getBlobProperties( context, testContainerName, "bar")
     
     var status = res._1
     
@@ -153,16 +153,16 @@ object basicblobtest
   }
   def setBlobMetadata() =
   {
-    // assumption that setBlob has been run first :)
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
     
     var blob = new Blob("bar")
-    var hm = new HashMap[String, String]()
+    var hm = new HAzureBlobClient.Map[String, String]()
     hm("aaaa") = "bar"
     hm("bbbb") = "kjk"
     
     blob.metaData = hm
     
-    var status = as.setBlobMetadata( testContainerName, blob )
+    var status = AzureBlobClient.setBlobMetadata( context, testContainerName, blob )
 
     
     if (status.successful)
@@ -179,16 +179,16 @@ object basicblobtest
 
   def setBlobProperties() =
   {
-    // assumption that setBlob has been run first :)
+    // AzureBlobClient.umption that setBlob hAzureBlobClient.been run first :)
     
     var blob = new Blob("bar")
-    var hm = new HashMap[String, String]()
+    var hm = new HAzureBlobClient.Map[String, String]()
     hm("foo") = "bar"
     hm("kenny") = "kjk"
     
     blob.metaData = hm
     
-    var status = as.setBlobProperties( testContainerName, blob)
+    var status = AzureBlobClient.setBlobProperties(context,  testContainerName, blob)
 
     
     if (status.successful)
@@ -205,7 +205,7 @@ object basicblobtest
       
   def createContainer() =
   {
-    var status = as.createContainer(  testContainerName2 )
+    var status = AzureContainerClient.createContainer( context,  testContainerName2 )
     
     if (status.successful)
     {
@@ -219,7 +219,7 @@ object basicblobtest
 
   def listContainers() =
   {
-    var res = as.listContainers()
+    var res = AzureContainerClient.listContainers(context )
     var status = res._1
     
     if (status.successful)
@@ -235,7 +235,7 @@ object basicblobtest
   def setContainerMetadata() =
   {
 
-    var status = as.setContainerMetadata( testContainerName, "foo", "bar" )
+    var status = AzureContainerClient.setContainerMetadata( context, testContainerName, "foo", "bar" )
     
     if (status.successful)
     {
@@ -250,7 +250,7 @@ object basicblobtest
   def getContainerMetadata() =
   {
 
-    var res = as.getContainerMetadata( testContainerName )
+    var res = AzureContainerClient.getContainerMetadata(context,  testContainerName )
     
     var status = res._1
     
@@ -266,7 +266,7 @@ object basicblobtest
   
   def deleteContainer() =
   {
-    var status = as.deleteContainer(  testContainerName2 )
+    var status = AzureContainerClient.deleteContainer( context,  testContainerName2 )
     
     if (status.successful)
     {
@@ -320,8 +320,8 @@ object basicblobtest
     
     l += acl
     
-    as.setContainerACL( "foo2", l, true  )
-    var resp2 = as.getContainerACL( "foo2"  )
+    AzureBlobClient.setContainerACL( "foo2", l, true  )
+    var resp2 = AzureBlobClient.getContainerACL( "foo2"  )
     
     println( "acls are " + resp2._2.toString() )
     println( "acl " + resp2._2(0).uid.toString() )
@@ -329,20 +329,20 @@ object basicblobtest
     println( "acl " + resp2._2(0).endTime.toString() )
     
     */
-    //as.createContainer(  args(0) )
+    //AzureBlobClient.createContainer(  args(0) )
     
-    //as.setContainerMetadata( args(0), "foo", "bar") 
+    //AzureBlobClient.setContainerMetadata( args(0), "foo", "bar") 
 
-    //var resp = as.getContainerMetadata( args(0) ) 
+    //var resp = AzureBlobClient.getContainerMetadata( args(0) ) 
 
     //println("headers " + resp._2.toString() )
 
-    //var resp2 = as.deleteContainer( args(0) ) 
+    //var resp2 = AzureBlobClient.deleteContainer( args(0) ) 
 
     //println("xxxx " + resp2.toString() )
 
 
-    //as.setBlobByFilename( "fodddo3", "/tmp/ken.txt", "foo")
+    //AzureBlobClient.setBlobByFilename( "fodddo3", "/tmp/ken.txt", "foo")
 
     
     /*
@@ -353,15 +353,15 @@ object basicblobtest
     b.data(2) = 61
     
     
-    as.setBlob( "foo2", b)
+    AzureBlobClient.setBlob( "foo2", b)
     
     
-    var bb = as.getBlob( "foo2", "bar")
+    var bb = AzureBlobClient.getBlob( "foo2", "bar")
     
 
     println("data is " + bb._2.data.toString() )
     
-    var resp3 = as.listContainers()
+    var resp3 = AzureBlobClient.listContainers()
     println("resp " + resp3.toString() )
     
     */
