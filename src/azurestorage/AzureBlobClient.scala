@@ -113,9 +113,9 @@ object AzureBlobClient
       // nasty general catch...
       // but given this is the highest level...  I'll live with it for now.
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobByFilePath exception " + ex.toString() )
+          log.error("AzureBlobStorage::setBlobByFilePath exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
-          status.message = "Failed to set blob by filepath"
+          status.message = ex.toString()
         }
     }  
     
@@ -159,8 +159,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::putBlob exception")
+          log.error("AzureBlobStorage::putBlob exception "+ ex.getStackTrace( ))
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }  
     
@@ -181,8 +182,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::deleteBlob exception")
+          log.error("AzureBlobStorage::deleteBlob exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }  
     
@@ -206,8 +208,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::getBlob exception")
+          log.error("AzureBlobStorage::getBlob exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }  
     
@@ -237,8 +240,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::getBlobProperties exception")
+          log.error("AzureBlobStorage::getBlobProperties exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }    
     
@@ -258,8 +262,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobProperties exception")
+          log.error("AzureBlobStorage::setBlobProperties exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }    
     
@@ -279,8 +284,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobMetadata exception")
+          log.error("AzureBlobStorage::setBlobMetadata exception "+ ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }    
     
@@ -307,8 +313,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobMetadata exception")
+          log.error("AzureBlobStorage::setBlobMetadata exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }    
     
@@ -332,8 +339,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::setContainerMetadata exception")
+          log.error("AzureBlobStorage::setContainerMetadata exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }        
     
@@ -359,8 +367,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::addBlobMetadata exception")
+          log.error("AzureBlobStorage::addBlobMetadata exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }        
     return status
@@ -387,8 +396,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::getBlobMetadata exception")
+          log.error("AzureBlobStorage::getBlobMetadata exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }    
     
@@ -411,8 +421,9 @@ object AzureBlobClient
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureBlobStorage::listBlobs exception " + ex.toString() )
+          log.error("AzureBlobStorage::listBlobs exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
+          status.message = ex.toString()
         }
     }
     
