@@ -7,6 +7,8 @@ TODO:
 Not an exhaustive list, but rough order of priorities
 
 + Complete blob block methods
++ ACLs for blobs
++ ACLs for containers
 + Start blob page methods
 + Complete container calls.
 + Queues
@@ -29,15 +31,16 @@ Once this instance is created the mechanism for creating/retrieving blobs, conta
 
 The most basic example of use is:
 
+      var context = new AzureContext( myAcctString, myKeyString )
+      
       // create a container.
-      var as = new AzureBlobStorage("mystore", "mykeyputhere")
-      as.createContainer(  "mycontainer" )
+      AzureContainerClient.createContainer( context,  "mycontainername" )
       
       // create a blob (no data)
       var blob = new Blob("myblob")
       
       // store the blob.
-      as.storeBlob( blob, "mycontainer")
+      AzureBlobClient.storeBlob( context, "mycontainername", blob )
       
       
  The AzureBlobStorage API is still in flux, so there may be changes such as createContainer returns an instance of the Container class, and that has to be
