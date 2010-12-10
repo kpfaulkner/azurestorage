@@ -278,23 +278,71 @@ object basicblobtest
     }      
   }
   
+  def setContainerACL() =
+  {
+  
+    var l = List[ ContainerACL]()
+    
+    var acl = new ContainerACL()
+    acl.uid = "FFF"
+    acl.startTime = new Date()
+    acl.endTime = new Date(110,0,1)
+    acl.canRead = true
+    acl.canWrite = false
+    acl.canDelete = true
+  
+    l += acl
+  
+    AzureContainerClient.setContainerACL( context, testContainerName, l, true  )
+
+  }
+  
+  def getContainerACL() =
+  {
+  
+
+    var resp2 = AzureContainerClient.getContainerACL( context, testContainerName   )
+  
+    println( "acls are " + resp2._2.toString() )
+    println( "acl " + resp2._2(0).uid.toString() )
+    println( "acl " + resp2._2(0).startTime.toString() )
+    println( "acl " + resp2._2(0).endTime.toString() )
+    if (resp2._2(0).canRead)
+    {
+      println("CAN READ")
+    }
+    if (resp2._2(0).canWrite)
+    {
+      println("CAN WRITE")
+    }
+    if (resp2._2(0).canDelete)
+    {
+      println("CAN DELETE")
+    }
+    
+  
+  }
+  
   def main(args: Array[String]) =
   {
 
     //deleteContainer()
-    putBlob("bar")
-    putBlob("foo")
-    putBlob("abc")
+    //putBlob("bar")
+    //putBlob("foo")
+    //putBlob("abc")
     
     
     
     //getBlob()
     //setBlobProperties()
-    setBlobMetadata()
-    getBlobMetadata()
+    //setBlobMetadata()
+    //getBlobMetadata()
     //getBlobProperties()
-    listBlobs()
+    //listBlobs()
 
+    //setContainerACL()
+    getContainerACL()
+    
     //deleteBlob()
 
     /*
@@ -307,64 +355,7 @@ object basicblobtest
     deleteContainer()
     */
     
-    /*
-    var l = List[ContainerACL]()
-    
-    var acl = new ContainerACL()
-    acl.uid = "FFF"
-    acl.startTime = new Date()
-    acl.endTime = new Date(110,0,1)
-    acl.canRead = true
-    acl.canWrite = false
-    acl.canDelete = true
-    
-    l += acl
-    
-    AzureBlobClient.setContainerACL( "foo2", l, true  )
-    var resp2 = AzureBlobClient.getContainerACL( "foo2"  )
-    
-    println( "acls are " + resp2._2.toString() )
-    println( "acl " + resp2._2(0).uid.toString() )
-    println( "acl " + resp2._2(0).startTime.toString() )
-    println( "acl " + resp2._2(0).endTime.toString() )
-    
-    */
-    //AzureBlobClient.createContainer(  args(0) )
-    
-    //AzureBlobClient.setContainerMetadata( args(0), "foo", "bar") 
-
-    //var resp = AzureBlobClient.getContainerMetadata( args(0) ) 
-
-    //println("headers " + resp._2.toString() )
-
-    //var resp2 = AzureBlobClient.deleteContainer( args(0) ) 
-
-    //println("xxxx " + resp2.toString() )
-
-
-    //AzureBlobClient.setBlobByFilename( "fodddo3", "/tmp/ken.txt", "foo")
-
-    
-    /*
-    var b = new Blob("bar")
-    b.data = new Array[Byte]( 3 )
-    b.data(0) = 60
-    b.data(1) = 61
-    b.data(2) = 61
-    
-    
-    AzureBlobClient.setBlob( "foo2", b)
-    
-    
-    var bb = AzureBlobClient.getBlob( "foo2", "bar")
-    
-
-    println("data is " + bb._2.data.toString() )
-    
-    var resp3 = AzureBlobClient.listContainers()
-    println("resp " + resp3.toString() )
-    
-    */
+  
   }
 }
 

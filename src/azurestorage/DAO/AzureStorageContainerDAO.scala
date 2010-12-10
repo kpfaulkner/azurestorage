@@ -312,31 +312,50 @@ class AzureStorageContainerDAO
     return xml.toString()
 
   }
-  
-  def setContainerACL( accountName:String, key:String, container:String, ACLList:List[ ContainerACL ], publicAccess:boolean ): Status = 
+
+  // see if I can make a generic set.
+  def genericSet( method:HttpMethodBase, accountName:String, key:String, container: String, canonicalResourceExtra: String, metaData:HashMap[String, String], data: Array[Byte] ): Status =
+  {
+    
+    log.info("AzureStorageBlobDAO::genericSet start")
+    
+    var status = new Status()
+
+    // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
+    // go figure....
+    var canonicalResource = "/"+accountName+"/"+container
+    var url = "http://"+accountName+baseBlobURL+"/"+container 
+    if ( canonicalResourceExtra != "" )
+    {
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":").replace("&","\n")
+      url += "?"+canonicalResourceExtra
+    }
+
+    var client = new HttpClient()
+    method.setURI( new URI( url ) )
+    
+    AzureStorageCommon.addMetadataToMethod( method, metaData )
+    
+    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, data )
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )    
+    var res = client.executeMethod( method )    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+
+    status.code = res
+    
+    return status
+  }
+    
+  def setContainerACL( accountName:String, key:String, containerName:String, ACLList:List[ ContainerACL ], publicAccess:boolean ): Status = 
   {
     
     log.info("AzureStorageContainerDAO::setContainerACL start") 
-    
-    
-    var canonicalResource = "/"+accountName+"/"+container+"?comp=acl"
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"?restype=container&comp=acl"
-    
-    //var canonicalResource = "/"+accountName+"/"+container+"?comp=acl"
-    //var url = "http://"+accountName+baseBlobURL+"/"+container+"?comp=acl"
-    
-    var xml = generateACLXML( ACLList )
-    
-    log.debug("XML is " + xml )
-    
     var status = new Status()
-    var client = new HttpClient()    
-    var method = new PutMethod( url )
     
-    log.debug("url is " + url )
-     
-    var keyValuePairs = Map[String, String]()
-    
+    var metaData = new HashMap[String, String]()
     var isPublic = "true"
     
     if ( !publicAccess )
@@ -345,30 +364,26 @@ class AzureStorageContainerDAO
       
     }
     
-    keyValuePairs += "x-ms-prop-publicaccess" -> isPublic
-    keyValuePairs += "x-ms-version" -> "2009-07-17"
+    var xml = generateACLXML( ACLList )
     
-    AzureStorageCommon.addMetadataToMethod( method, keyValuePairs )
-    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, xml.getBytes() )
+    log.debug("XML is " + xml )
+    
+    var method = new PutMethod( )
+    
+    metaData("x-ms-prop-publicaccess") = isPublic
     
     var entity = new ByteArrayRequestEntity( xml.getBytes() )
     method.setRequestEntity( entity )
 
-    // setup proxy.
-    AzureStorageCommon.setupProxy( client )
-        
-    var res = client.executeMethod( method )    
+    status = genericSet( method, accountName, key, containerName, "comp=acl&restype=container",metaData, xml.getBytes() )
     
-    status.code = res
-    
-    if (res == StatusCodes.SET_CONTAINER_ACL_SUCCESS )
+    if ( status.code == StatusCodes.SET_CONTAINER_ACL_SUCCESS )
     {
       status.successful = true
     }
     
-    //var responseBody = method.getResponseBodyAsString()
-
-    //log.debug("set container acl response " + responseBody )
+    var responseBody = method.getResponseBodyAsString()
+    log.debug("set container acl response " + responseBody )
     
     return status
   }
@@ -435,34 +450,49 @@ class AzureStorageContainerDAO
     
   }
   
+  def genericGet( method:HttpMethodBase, accountName:String, key:String, container: String ,canonicalResourceExtra: String): Status =
+  {
+    log.info("AzureStorageBlobDAO::genericGet start")
+    
+    var status = new Status()
+    
+    var canonicalResource = "/"+accountName+"/"+container
+    var url = "http://"+accountName+baseBlobURL+"/"+container
+
+    if ( canonicalResourceExtra != "" )
+    {
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":").replace("&","\n")
+      url += "?"+canonicalResourceExtra
+    }
+
+    var client = new HttpClient()
+    method.setURI( new URI( url ) )
+    
+    AzureStorageCommon.addMetadataToMethod( method, new HashMap[String,String]() )
+    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null)
+    
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )
+        
+    var res = client.executeMethod( method )    
+   
+    status.code = res   
+    return status
+  }
+
   
   def getContainerACL( accountName:String, key:String, container:String ): (Status, List[ ContainerACL ] ) = 
   {
     
     log.info("AzureStorageContainerDAO::getContainerACL start") 
     
-    var canonicalResource = "/"+accountName+"/"+container+"?comp=acl"
-    var url = "http://"+accountName+baseBlobURL+"/"+container+"?restype=container&comp=acl"
-    
     var status = new Status()
-    var client = new HttpClient()    
-    var method = new GetMethod( url )
     
-    log.debug("url is " + url )
-
-    var keyValuePairs = Map[String, String]()
-    keyValuePairs += "x-ms-version" -> "2009-07-17"
-    AzureStorageCommon.addMetadataToMethod( method, keyValuePairs )
-    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, null)
-
-    // setup proxy.
-    AzureStorageCommon.setupProxy( client )
-        
-    var res = client.executeMethod( method )    
+    var method = new GetMethod( )
     
-    status.code = res
+    status = genericGet( method, accountName, key, container,"comp=acl&restype=container"  )
     
-    if ( res == StatusCodes.GET_CONTAINER_ACL_SUCCESS)
+    if ( status.code == StatusCodes.GET_CONTAINER_ACL_SUCCESS)
     {
       status.successful = true
     }

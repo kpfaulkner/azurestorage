@@ -141,7 +141,7 @@ object AzureBlobClient
   
   def getBlockList( context:AzureContext, containerName: String, blobName: String ): ( Status, Array[ String] ) =
   {
-        var status = new Status()
+    var status = new Status()
 
     return ( status, null )
   }
@@ -216,9 +216,6 @@ object AzureBlobClient
     
     return ( status, blob )
   }
-    
-  
-  ////////////// BLOBS ////////////////////
 
   // works.
   def getBlobProperties(  context:AzureContext, containerName:String ,blobName:String): ( Status, Blob ) = 
