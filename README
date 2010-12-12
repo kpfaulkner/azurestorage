@@ -22,6 +22,7 @@ AzureStorage project is setup as a Maven 2.0 project. To compile simply use the 
 azurestorage-1.0-SNAPSHOT-jar-with-dependencies.jar file. (the non self contained version azurestorage-1.0-SNAPSHOT.jar exists if you wish to use that 
 instead).
 
+Has recently been converted to Scala 2.8.*
 
 Usage:
 ------
