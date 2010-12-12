@@ -48,9 +48,6 @@ import java.io.ObjectInputStream
 import org.apache.commons.io.FilenameUtils
 
 
-
-
-
 // main object for queue access.
 object AzureQueueClient
 {
@@ -61,7 +58,9 @@ object AzureQueueClient
   val log = Logger.get
   
   
-  def listQueues( context:AzureContext ): ( Status, List[AzureQueue] ) =
+  // was going to list AzureQueue instances, but really thinking Strings might be the way
+  // to go atm.
+  def listQueues( context:AzureContext ): ( Status, List[ String ] ) =
   {
     var status = new Status()
     
