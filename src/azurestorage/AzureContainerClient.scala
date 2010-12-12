@@ -153,7 +153,7 @@ object AzureContainerClient
 
 
   // set container ACL via container string name.
-  def setContainerACL( context:AzureContext, containerName: String, ACLList:List[ ContainerACL ], isPublic:boolean ): Status =
+  def setContainerACL( context:AzureContext, containerName: String, ACLList:List[ ContainerACL ], isPublic:Boolean ): Status =
   {
     var status = new Status()
     

@@ -80,5 +80,5 @@ class Status
   var message:String = null
   var code:Int = StatusCodes.SUCCESS
   
-  var successful:boolean = false
+  var successful:Boolean = false
 }

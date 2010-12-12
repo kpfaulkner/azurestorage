@@ -291,7 +291,8 @@ object basicblobtest
     acl.canWrite = false
     acl.canDelete = true
   
-    l += acl
+    //l += acl 2.7
+    l ::= acl
   
     AzureContainerClient.setContainerACL( context, testContainerName, l, true  )
 

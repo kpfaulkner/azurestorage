@@ -424,7 +424,8 @@ class AzureStorageBlobDAO
       metadataHM ++ propertiesHM
       b.metaData = metadataHM
 
-      l += b
+      // l += b scala 2.7
+      l ::= b  // scala 2.8
     }
     
     return l

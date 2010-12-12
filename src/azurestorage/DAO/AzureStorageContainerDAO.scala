@@ -87,7 +87,8 @@ class AzureStorageContainerDAO
       c.name = (container \ "Name").text
       c.url = ( container \ "Url").text
      
-      l += c
+      //l += c  2.7
+      l ::= c
     }
     
     return l
@@ -349,7 +350,7 @@ class AzureStorageContainerDAO
     return status
   }
     
-  def setContainerACL( accountName:String, key:String, containerName:String, ACLList:List[ ContainerACL ], publicAccess:boolean ): Status = 
+  def setContainerACL( accountName:String, key:String, containerName:String, ACLList:List[ ContainerACL ], publicAccess:Boolean ): Status = 
   {
     
     log.info("AzureStorageContainerDAO::setContainerACL start") 
@@ -442,7 +443,8 @@ class AzureStorageContainerDAO
         realACL.canDelete = false
       }
       
-      l += realACL
+      // l += realACL 2.7
+      l ::= realACL
       
     }
     
