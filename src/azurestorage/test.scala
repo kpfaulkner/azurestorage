@@ -83,7 +83,7 @@ object basicblobtest
     {
       println("listBlobs successful " )
       
-      var blobs = res._2.get
+      var blobs = res._2
       for ( b <- blobs )
       {
         println("blob " + b.toString() )
