@@ -63,7 +63,7 @@ object basicblobtest
     
     if (status.successful)
     {
-      var blob = res._2
+      var blob = res._2.get
       println("getBlob successful " + new String( blob.data ) )
       
     }
@@ -83,7 +83,7 @@ object basicblobtest
     {
       println("listBlobs successful " )
       
-      var blobs = res._2
+      var blobs = res._2.get
       for ( b <- blobs )
       {
         println("blob " + b.toString() )
@@ -123,7 +123,7 @@ object basicblobtest
     
     if (status.successful)
     {
-      var blob = res._2
+      var blob = res._2.get
       println("getBlobMetadata successful " +blob.metaData.toString() )
       
     }
@@ -142,7 +142,7 @@ object basicblobtest
     
     if (status.successful)
     {
-      var blob = res._2
+      var blob = res._2.get
       println("getBlobProperties successful " +blob.metaData.toString() )
       
     }

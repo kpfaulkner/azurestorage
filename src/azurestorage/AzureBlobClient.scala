@@ -139,11 +139,11 @@ object AzureBlobClient
     return status
   }
   
-  def getBlockList( context:AzureContext, containerName: String, blobName: String ): ( Status, Array[ String] ) =
+  def getBlockList( context:AzureContext, containerName: String, blobName: String ): ( Status, Option[ Array[ String] ] ) =
   {
     var status = new Status()
 
-    return ( status, null )
+    return ( status, None)
   }
     
   def putBlob( context:AzureContext, containerName: String, blob: Blob ): Status =
@@ -191,10 +191,10 @@ object AzureBlobClient
     return status
   }
     
-  def getBlob( context:AzureContext, containerName: String, blobName: String ): ( Status, Blob ) =
+  def getBlob( context:AzureContext, containerName: String, blobName: String ): ( Status, Option[Blob] ) =
   {
   
-    var blob:Blob = null
+    var blob:Option[Blob] = None
     
     var status = new Status()
     
@@ -202,7 +202,7 @@ object AzureBlobClient
     {
       var res = blobDao.getBlob( context.accountName, context.key, containerName, blobName )
       status = res._1
-      blob = res._2
+      blob = Some( res._2 )
     }
     catch
     {
@@ -218,18 +218,18 @@ object AzureBlobClient
   }
 
   // works.
-  def getBlobProperties(  context:AzureContext, containerName:String ,blobName:String): ( Status, Blob ) = 
+  def getBlobProperties(  context:AzureContext, containerName:String ,blobName:String): ( Status, Option[ Blob ] ) = 
   {
     
     var status = new Status()
-    var blob:Blob= null
+    var blob:Option[Blob]= None
     
     try
     {
       var res = blobDao.getBlobProperties( context.accountName, context.key, containerName, blobName )
       
       status = res._1
-      blob = res._2
+      blob = Some( res._2 )
      
       log.debug("status code is " + status.code.toString() ) 
     }
@@ -374,18 +374,18 @@ object AzureBlobClient
   
 
   // works.
-  def getBlobMetadata(  context:AzureContext, containerName:String ,blobName:String): ( Status, Blob ) = 
+  def getBlobMetadata(  context:AzureContext, containerName:String ,blobName:String): ( Status, Option[ Blob ]) = 
   {
     
     var status = new Status()
-    var blob:Blob= null
+    var blob:Option[Blob]= None
     
     try
     {
       var res = blobDao.getBlobMetadata( context.accountName, context.key, containerName, blobName )
       
       status = res._1
-      blob = res._2
+      blob = Some( res._2 )
      
       log.debug("status code is " + status.code.toString() ) 
     }
@@ -402,6 +402,8 @@ object AzureBlobClient
     return ( status, blob )
   }
     
+  // wrap the list in Option?
+  // Consistency or stupid?
   def listBlobs( context:AzureContext, containerName:String ): ( Status, List[Blob] ) = 
   {
     var status = new Status()
