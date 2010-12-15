@@ -250,7 +250,7 @@ object basicblobtest
   def getContainerMetadata() =
   {
 
-    var res = AzureContainerClient.getContainerMetadata(context,  testContainerName )
+    var res = AzureContainerClient.getContainerMetadata(context,  testContainerName2 )
     
     var status = res._1
     
@@ -278,7 +278,7 @@ object basicblobtest
     }      
   }
   
-  def setContainerACL() =
+  def setContainerACL( canDelete:Boolean ) =
   {
   
     var l = List[ ContainerACL]()
@@ -288,13 +288,13 @@ object basicblobtest
     acl.startTime = new Date()
     acl.endTime = new Date(110,0,1)
     acl.canRead = true
-    acl.canWrite = false
-    acl.canDelete = true
+    acl.canWrite = true
+    acl.canDelete = canDelete
   
     //l += acl 2.7
     l ::= acl
   
-    AzureContainerClient.setContainerACL( context, testContainerName, l, true  )
+    AzureContainerClient.setContainerACL( context, testContainerName2, l, true  )
 
   }
   
@@ -302,7 +302,7 @@ object basicblobtest
   {
   
 
-    var resp2 = AzureContainerClient.getContainerACL( context, testContainerName   )
+    var resp2 = AzureContainerClient.getContainerACL( context, testContainerName2   )
   
     println( "acls are " + resp2._2.toString() )
     println( "acl " + resp2._2(0).uid.toString() )
@@ -327,6 +327,30 @@ object basicblobtest
   def main(args: Array[String]) =
   {
 
+    // clear the decks.
+    //setContainerACL( true )
+    //getContainerACL()
+    //deleteContainer()
+  
+  
+    createContainer()
+    
+    /*
+    deleteContainer()
+    
+    
+    createContainer()
+    // set acl to fail.
+    setContainerACL( false )
+    getContainerACL()
+    deleteContainer()
+
+    setContainerACL( true )
+    getContainerACL()
+    deleteContainer()
+*/
+    
+    
     //deleteContainer()
     //putBlob("bar")
     //putBlob("foo")
@@ -342,7 +366,7 @@ object basicblobtest
     //listBlobs()
 
     //setContainerACL()
-    getContainerACL()
+    //getContainerACL()
     
     //deleteBlob()
 

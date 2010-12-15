@@ -11,6 +11,11 @@ import net.lag.logging.Logger
 import scala.io.Source
 import java.util.Date
 
+import java.io.FileOutputStream
+import java.io.FileInputStream
+import java.io.DataInputStream
+import java.io.DataOutputStream
+
 // basic operations on azure storage acct.
 // create container
 // upload file
@@ -22,7 +27,7 @@ import java.util.Date
 // Important note:
 //   Considering you cannot have containers inside of containers, the default container will be read from the config.
 //   all blobs will go into that container (private container)
-object AzureLoader
+object AzureCommand
 {
   
   Configgy.configure("azurestorage.cfg")
@@ -42,6 +47,8 @@ object AzureLoader
   var filename = ""
   var container = ""
   var destination = ""
+  
+  val azurePrefix = "azr:"
   
   // parse the args....
   // Use matchers... and see if I screw it up? :)
@@ -73,49 +80,143 @@ object AzureLoader
     return (filename, destination, container )
   }
 
-   
-  // default action is to put it in the "private" container.
-  // args are command line parameters.
-  // There are currently 2 options.
-  // 1) localfile  destination.
-  //    /tmp/foo.txt /my/azure/directory/and/filename.txt
+  // put blob.
+  // assume origin is correct path to file. eg /tmp/foo.txt
+  // destination is azr://container
+  private def doPut( origin: String, destination:String ) =
+  {
+    // FIXME: need to be OS agnostic.
+    var sp = destination.split("/")
+    
+    var container = sp.last
+    
+    sp = origin.split("/")
+    var baseFile = sp.last
+    
+    var status = AzureBlobClient.putBlobByFilePath( context, container, origin , baseFile )
+    if (status.code != StatusCodes.SET_BLOB_SUCCESS )
+    {
+      println("Failed to copy")
+    }
+    else
+    {
+      println("Copied successfully")
+    }
+  }
+  
+  // write data contents of blob as file.
+  private def writeFile( destination: String, blob:Blob ) =
+  {
+    var fn = destination + blob.name
+    
+    var outFileStream = new FileOutputStream( fn, false )
+    var dataOutputStream = new DataOutputStream( outFileStream )
+  
+    dataOutputStream.write( blob.data )
+     
+    dataOutputStream.close()
+    
+  }
+  
+  // get blob.
+  // assume origin path to azure blob. eg, azr://container/myfile.txt
+  // destination is directory to write too. eg /tmp/   
   // 
-  // 2) localfile container destination
-  //    /tmp/foo.txt mycontainername /my/azure/directory/within/the/container/and/filename.txt
+  // No real error checking.
+  private def doGet( origin: String, destination:String ) =
+  {
+
+    // make sure destination ends in /
+    var dest = destination
+    if ( dest.last != "/")
+    {
+      dest += "/"
+    }    
+    
+    var sp = origin.split("/")
+    var baseFile = sp.last
+    var container = sp(2)
+    
+    var res = AzureBlobClient.getBlob( context, container, baseFile )
+    
+    var status = res._1
+    var blobOption = res._2
+    
+    
+    if ( status.successful )
+    {
+      if ( blobOption != None )
+      {
+        println("Success")
+        var blob = blobOption.get
+        
+        writeFile( dest, blob )
+      }
+      else
+      {
+        println("failed 1")
+      }
+      
+    }
+    else
+    {
+      println("failed 2")
+    }
+    
+  }
+  
+  
+  
+  
+  
+  // 1) localfile  destination.
+  //    /tmp/foo.txt /container/filename.txt
+  // 
   //
-  // We *could* make it so the container name is just the first part of the destination directory structure, but will
-  // keep it separate for the moment.
   def doCopy( args: Array[String ]) =
   {
-    log.info("AzureLoader::doCopy start")
+    log.info("AzureCommand::doCopy start")
     
     try
     {
    
       var l = args.toList
-      var params = parseCopyArgs( l )
       
-      var filename = params._1
-      var destination = params._2  
-      var container = params._3
-
-           
-      log.debug("copying " + filename + " to " + destination + " using container " + container )
-     
+      var origin = args(0)
+      var destination = args(1)
       
-      var status = AzureBlobClient.setBlobByFilename( context, container, filename, destination )
+      if ( origin.startsWith( azurePrefix ) )
+      {
+        doGet( origin, destination )
+      }
+      else if ( destination.startsWith( azurePrefix ))
+      {
+        doPut( origin, destination )
+      }
+      
+      log.debug("copy file " + filename + " to " + destination )
+      
+      var sp = filename.split("/")
+      var baseFile = filename
+      if ( sp.length > 1 )
+      {
+        baseFile = sp.last      
+      }
+      
+      // hacky parsing. Need to use OS agnostic (ie slash independent method)
+      var status = AzureBlobClient.putBlobByFilePath( context, container, filename, baseFile )
      
       if (status.code != StatusCodes.SET_BLOB_SUCCESS )
       {
         println("Failed to copy")
       }
-      
+    
     }
     catch
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureLoader::doCopy exception " + ex.toString() )
+          log.error("AzureCommand::doCopy exception " + ex.toString() )
           //status.code = StatusCodes.FAILED
           //status.message = "Failed to set blob by filepath"
         }
@@ -125,7 +226,7 @@ object AzureLoader
 
   def doMakeContainer( args: Array[String ]) =
   {
-    log.info("AzureLoader::doMakeContainer start")
+    log.info("AzureCommand::doMakeContainer start")
     
     try
     {
@@ -146,7 +247,7 @@ object AzureLoader
     {
       // nasty general catch...
       case ex: Exception => {
-          log.error("AzureLoader::doMakeContainer exception " + ex.toString() )
+          log.error("AzureCommand::doMakeContainer exception " + ex.toString() )
           //status.code = StatusCodes.FAILED
           //status.message = "Failed to set blob by filepath"
         }

@@ -196,9 +196,9 @@ object AzureStorageCommon
     }
     
     var headers = method.getRequestHeaders()
-    //var dateHeader = getUTC()
-    //method.setRequestHeader( new Header("x-ms-date", dateHeader) )
-    //method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
+    var dateHeader = getUTC()
+    method.setRequestHeader( new Header("x-ms-date", dateHeader) )
+    method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
  
     log.debug("headers are " + headers.toString() )
     

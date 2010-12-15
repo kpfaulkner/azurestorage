@@ -48,6 +48,7 @@ import java.io.ObjectInputStream
 import org.apache.commons.io.FilenameUtils
 
 
+
 class AzureContext( a:String, k:String)
 {
   val key = k
@@ -69,7 +70,7 @@ object AzureBlobClient
   
   // filename is fully qualified.
   // destination is the location within the container.
-  def setBlobByFilename( context:AzureContext, containerName: String, filename: String, destination:String ): Status =
+  def putBlobByFilePath( context:AzureContext, containerName: String, filename: String, destination:String ): Status =
   {
     var status = new Status()
     
