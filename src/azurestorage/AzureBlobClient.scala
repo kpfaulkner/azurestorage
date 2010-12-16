@@ -114,7 +114,7 @@ object AzureBlobClient
       // nasty general catch...
       // but given this is the highest level...  I'll live with it for now.
       case ex: Exception => {
-          log.error("AzureBlobStorage::setBlobByFilePath exception " + ex.getStackTrace() )
+          log.error("AzureBlobStorage::putBlobByFilePath exception " + ex.getStackTrace() )
           status.code = StatusCodes.FAILED
           status.message = ex.toString()
         }

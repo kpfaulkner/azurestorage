@@ -50,35 +50,7 @@ object AzureCommand
   
   val azurePrefix = "azr:"
   
-  // parse the args....
-  // Use matchers... and see if I screw it up? :)
-  def parseCopyArgs( args: List[ String ] ): (String, String, String) = 
-  {
- 
-    var filename = ""
-    var destination = ""      
-    var container = defaultPrivateContainer
-    
-    log.debug("args are " + args.toString() )
-    args match {
-      
-      
-      case fn::cont::dest::Nil   =>
-        log.debug("1COPY " + fn + " : " + cont + " : " + dest )
-        filename = fn
-        destination = dest
-        container = cont
-        
-      case fn :: dest :: Nil =>
-        log.debug("2COPY " + fn + " : " + dest )
-        filename = fn
-        destination = dest
 
-      case other => println("UNKNOWN")
-    }
-    
-    return (filename, destination, container )
-  }
 
   // put blob.
   // assume origin is correct path to file. eg /tmp/foo.txt
@@ -128,7 +100,7 @@ object AzureCommand
 
     // make sure destination ends in /
     var dest = destination
-    if ( dest.last != "/")
+    if ( dest.last != '/')
     {
       dest += "/"
     }    
@@ -150,6 +122,11 @@ object AzureCommand
         println("Success")
         var blob = blobOption.get
         
+        // display the metadata.
+        for ( k <- blob.metaData.keys )
+        {
+          println( k + " : " + blob.metaData(k) )
+        }
         writeFile( dest, blob )
       }
       else
@@ -194,23 +171,7 @@ object AzureCommand
         doPut( origin, destination )
       }
       
-      log.debug("copy file " + filename + " to " + destination )
-      
-      var sp = filename.split("/")
-      var baseFile = filename
-      if ( sp.length > 1 )
-      {
-        baseFile = sp.last      
-      }
-      
-      // hacky parsing. Need to use OS agnostic (ie slash independent method)
-      var status = AzureBlobClient.putBlobByFilePath( context, container, filename, baseFile )
-     
-      if (status.code != StatusCodes.SET_BLOB_SUCCESS )
-      {
-        println("Failed to copy")
-      }
-    
+          
     }
     catch
     {
