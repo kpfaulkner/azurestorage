@@ -197,6 +197,8 @@ object AzureStorageCommon
     
     var headers = method.getRequestHeaders()
     var dateHeader = getUTC()
+    
+    // already set this... wrong wrong wrong. Need to fix.
     method.setRequestHeader( new Header("x-ms-date", dateHeader) )
     method.setRequestHeader( new Header("x-ms-version", "2009-09-19" ) )
  

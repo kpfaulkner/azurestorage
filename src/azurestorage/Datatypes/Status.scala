@@ -65,6 +65,8 @@ object StatusCodes
   val GET_BLOB_METADATA_SUCCESS = 200
   val SET_BLOB_METADATA_SUCCESS = 200
   
+  // queues
+  val CREATE_QUEUE_SUCCESS = 201
 }
 
 

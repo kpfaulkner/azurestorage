@@ -324,6 +324,14 @@ object basicblobtest
   
   }
   
+  def createQueue( queueName:String ) =
+  {
+    var res = AzureQueueClient.createQueue( context, queueName )
+    
+    println("result " + res.toString() )
+  }
+  
+  
   def main(args: Array[String]) =
   {
 
@@ -333,7 +341,9 @@ object basicblobtest
     //deleteContainer()
   
   
-    createContainer()
+    //createContainer()
+    
+    createQueue( args(0) )
     
     /*
     deleteContainer()

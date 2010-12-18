@@ -36,16 +36,92 @@ package azurestorage.DAO
 import azurestorage.Datatypes._
 
 
+import org.apache.commons.httpclient._
+import org.apache.commons.httpclient.methods._
+import org.apache.commons.httpclient.params.HttpMethodParams
+import org.apache.commons.httpclient.util._
+import java.util.Calendar
+import org.apache.commons.httpclient.util.DateUtil
+import java.util.{Date, GregorianCalendar, TimeZone}
+import scala.util.Sorting
+import scala.collection.mutable.ListBuffer
+import org.apache.commons.httpclient.Header
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.security.SignatureException
+import javax.crypto.Mac
+import scala.xml.XML
+import javax.crypto.spec.SecretKeySpec
+import org.apache.commons.codec.binary.Base64._
+import org.apache.commons.codec.binary.Base64
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.Map
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity
 import net.lag.configgy.Configgy
 import net.lag.logging.Logger
 
 class AzureStorageQueueDAO 
 {
 
-  val baseBlobURL = ".blob.core.windows.net"
+  val baseBlobURL = ".queue.core.windows.net"
 
   val log = Logger.get
   
 
+  def createQueue( accountName:String, key:String, queueName:String ): Status =
+  {
+    log.info("AzureStorageQueueDAO::createQueue start")
     
+    var status = new Status()
+ 
+    var method = new PutMethod(  )
+    
+    status = genericSet( method, accountName, key, "", queueName, new HashMap[String, String](), null )
+    
+    if (status.code == StatusCodes.CREATE_QUEUE_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+  }
+  
+    
+  // see if I can make a generic set.
+  def genericSet( method:HttpMethodBase, accountName:String, key:String, canonicalResourceExtra: String, queueName:String, metaData:HashMap[String, String], data: Array[Byte] ): Status =
+  {
+    
+    log.info("AzureStorageQueueDAO::genericSet start")
+    
+    var status = new Status()
+
+    // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
+    // go figure....
+    var canonicalResource = "/"+accountName+"/"+queueName
+    var url = "http://"+accountName+baseBlobURL+"/"+queueName
+     
+    if ( canonicalResourceExtra != "" )
+    {
+      canonicalResource += "\n"+canonicalResourceExtra.replace("=",":")
+      url += "?"+canonicalResourceExtra
+    }
+
+    var client = new HttpClient()
+    method.setURI( new URI( url ) )
+    
+    AzureStorageCommon.addMetadataToMethod( method, metaData )
+    
+    AzureStorageCommon.populateMethod( method, key, accountName, canonicalResource, data )
+    // setup proxy.
+    AzureStorageCommon.setupProxy( client )    
+    var res = client.executeMethod( method )    
+    var responseBody = method.getResponseBodyAsString()
+
+    log.debug("response body " + responseBody)
+
+    status.code = res
+    
+    return status
+  }
+  
 }

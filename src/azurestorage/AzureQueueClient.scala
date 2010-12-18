@@ -52,7 +52,7 @@ import org.apache.commons.io.FilenameUtils
 object AzureQueueClient
 {
   
-  val queueDao = new AzureStorageQueueDAO()
+  val queueDAO = new AzureStorageQueueDAO()
   
   Configgy.configure("azurestorage.cfg")
   val log = Logger.get
@@ -63,13 +63,29 @@ object AzureQueueClient
   def listQueues( context:AzureContext ): ( Status, List[ String ] ) =
   {
     var status = new Status()
-    
+
     return (status, null )
   }
   
   def createQueue( context:AzureContext, queueName:String ) : Status =
   {
     var status = new Status()
+    
+    try
+    {
+      status = queueDAO.createQueue( context.accountName, context.key, queueName )
+    
+    }
+    catch 
+    {
+      // nasty general catch...
+      case ex: Exception => {
+        log.error("AzureQueueClient::createQueue exception " + ex.getStackTrace() )
+        status.code = StatusCodes.FAILED
+        status.message = ex.toString()
+      }
+    }
+    
     
     return status
   }
@@ -131,6 +147,17 @@ object AzureQueueClient
     return status
     
   }
+
+  def deleteMessage( context:AzureContext, queueName:String, msg:QueueMessage  ): Status =
+  {
+  
+    var status = new Status()
+    
+    return status
+    
+  }
+
+
 
   def clearMessages( context:AzureContext, queueName:String ) :Status =
   {
