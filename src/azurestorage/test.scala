@@ -331,7 +331,19 @@ object basicblobtest
     println("result " + res.toString() )
   }
   
-  
+  def listQueues() =
+  {
+    var res = AzureQueueClient.listQueues( context  )
+    
+    var status = res._1
+    var ql = res._2
+    
+    for ( i<- ql)
+    {
+      println( i.toString() )
+    }
+  }
+    
   def main(args: Array[String]) =
   {
 
@@ -344,6 +356,7 @@ object basicblobtest
     //createContainer()
     
     createQueue( args(0) )
+    listQueues()
     
     /*
     deleteContainer()

@@ -67,6 +67,7 @@ object StatusCodes
   
   // queues
   val CREATE_QUEUE_SUCCESS = 201
+  val LIST_QUEUES_SUCCESS = 200
 }
 
 

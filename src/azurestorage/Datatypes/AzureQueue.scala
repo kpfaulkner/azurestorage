@@ -33,9 +33,18 @@ this software without specific prior written permission.
 
 package azurestorage.Datatypes
 
+import scala.collection.mutable._
 
 
-class AzureQueue
+class AzureQueue( qName: String )
 {
-
+  // name of queue
+  val name = qName
+  
+  // url of queue
+  var url = ""
+  
+  // metadata associated with the queue
+  var metaData = new HashMap[String, String]()
+  
 }

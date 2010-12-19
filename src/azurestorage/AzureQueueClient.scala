@@ -60,11 +60,31 @@ object AzureQueueClient
   
   // was going to list AzureQueue instances, but really thinking Strings might be the way
   // to go atm.
-  def listQueues( context:AzureContext ): ( Status, List[ String ] ) =
+  def listQueues( context:AzureContext ): ( Status, List[ AzureQueue ] ) =
   {
     var status = new Status()
 
-    return (status, null )
+    // probably shouldn't make this.
+    var queueList = List[ AzureQueue ]()
+    
+    try
+    {
+      var res = queueDAO.listQueues( context.accountName, context.key )
+    
+      status = res._1
+      queueList = res._2
+    }
+    catch 
+    {
+      // nasty general catch...
+      case ex: Exception => {
+        log.error("AzureQueueClient::listQueues exception " + ex.getStackTrace() )
+        status.code = StatusCodes.FAILED
+        status.message = ex.toString()
+      }
+    }
+    
+    return (status, queueList )
   }
   
   def createQueue( context:AzureContext, queueName:String ) : Status =

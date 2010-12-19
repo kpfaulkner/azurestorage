@@ -86,6 +86,33 @@ class AzureStorageQueueDAO
     return status
   }
   
+  def listQueues( accountName:String, key:String  ): ( Status, List[AzureQueue]) =
+  {
+    log.info("AzureStorageQueueDAO::listQueues start")
+    
+    var status = new Status()
+    var queueList = List[ AzureQueue]()
+    
+    var method = new GetMethod(  )
+    
+    status = genericSet( method, accountName, key, "comp=list", "", new HashMap[String, String](), null )
+    
+    if (status.code == StatusCodes.LIST_QUEUES_SUCCESS)
+    {
+      status.successful = true
+      
+      var responseBody = method.getResponseBodyAsString()
+
+      var xml = responseBody.substring(3)
+
+      queueList = parseQueueList( xml )
+      
+    }
+    
+    return ( status, queueList )
+  }
+  
+  
     
   // see if I can make a generic set.
   def genericSet( method:HttpMethodBase, accountName:String, key:String, canonicalResourceExtra: String, queueName:String, metaData:HashMap[String, String], data: Array[Byte] ): Status =
@@ -123,5 +150,57 @@ class AzureStorageQueueDAO
     
     return status
   }
-  
+
+  private def hackyParseTags( xml: String ): HashMap[String, String ] =
+  {
+    log.debug("hackyParseTags start" )
+
+    var hm = new HashMap[String, String]()
+
+    if ( xml != "")
+    {
+      var e = XML.loadString( xml )
+      
+      for ( child <- e.child )
+      {
+        var tag = child.label
+        var data = child.text
+        hm( tag ) = data
+      }
+    }
+
+    return hm
+  }
+
+  private def parseQueueList( xml: String ): List[ AzureQueue ] = 
+  {
+    log.info("AzureStorageQueueDAO::parseQueueList start")  
+    
+    var l = List[AzureQueue]()
+    
+    var xmlNode = XML.loadString( xml )
+    
+    var queueList = xmlNode \\ "Queue"
+    
+    for ( queue <- queueList )
+    {
+
+      var name = ( queue  \ "Name").text
+      var q = new AzureQueue( name )
+      
+      var url = ( queue  \ "Url").text
+      q.url = url
+      
+      // get metadata
+      var metaData = ( queue \\ "Metadata")
+      var metaDataHM = hackyParseTags( metaData.toString() )
+      q.metaData = metaDataHM
+
+      l ::= q
+    }
+    
+    return l
+    
+  }
+    
 }
