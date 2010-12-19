@@ -36,7 +36,9 @@ package azurestorage.Datatypes
 import scala.collection.mutable._
 
 
-class AzureQueue( qName: String )
+// This is just details ABOUT an Azure Queue and is NOT supposed to be a 
+// class that does the work of a queue. eg, no push/pops etc here.
+class AzureQueueRef( qName: String )
 {
   // name of queue
   val name = qName

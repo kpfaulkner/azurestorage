@@ -86,12 +86,12 @@ class AzureStorageQueueDAO
     return status
   }
   
-  def listQueues( accountName:String, key:String  ): ( Status, List[AzureQueue]) =
+  def listQueues( accountName:String, key:String  ): ( Status, List[AzureQueueRef]) =
   {
     log.info("AzureStorageQueueDAO::listQueues start")
     
     var status = new Status()
-    var queueList = List[ AzureQueue]()
+    var queueList = List[ AzureQueueRef]()
     
     var method = new GetMethod(  )
     
@@ -172,11 +172,11 @@ class AzureStorageQueueDAO
     return hm
   }
 
-  private def parseQueueList( xml: String ): List[ AzureQueue ] = 
+  private def parseQueueList( xml: String ): List[ AzureQueueRef ] = 
   {
     log.info("AzureStorageQueueDAO::parseQueueList start")  
     
-    var l = List[AzureQueue]()
+    var l = List[AzureQueueRef]()
     
     var xmlNode = XML.loadString( xml )
     
@@ -186,7 +186,7 @@ class AzureStorageQueueDAO
     {
 
       var name = ( queue  \ "Name").text
-      var q = new AzureQueue( name )
+      var q = new AzureQueueRef( name )
       
       var url = ( queue  \ "Url").text
       q.url = url

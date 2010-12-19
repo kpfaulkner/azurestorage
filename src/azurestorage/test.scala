@@ -340,7 +340,7 @@ object basicblobtest
     
     for ( i<- ql)
     {
-      println( i.toString() )
+      println( i.name  )
     }
   }
     

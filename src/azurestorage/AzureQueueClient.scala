@@ -60,12 +60,12 @@ object AzureQueueClient
   
   // was going to list AzureQueue instances, but really thinking Strings might be the way
   // to go atm.
-  def listQueues( context:AzureContext ): ( Status, List[ AzureQueue ] ) =
+  def listQueues( context:AzureContext ): ( Status, List[ AzureQueueRef ] ) =
   {
     var status = new Status()
 
     // probably shouldn't make this.
-    var queueList = List[ AzureQueue ]()
+    var queueList = List[ AzureQueueRef ]()
     
     try
     {
