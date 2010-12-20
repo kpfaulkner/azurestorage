@@ -344,6 +344,24 @@ object basicblobtest
     }
   }
     
+  def putMessage( queueName:String, msg:String  ) =
+  {
+    var res = AzureQueueClient.putMessage( context, queueName, msg )
+    
+    println("result " + res.toString() )
+  }
+    
+
+  def getMessage( queueName:String ) =
+  {
+    var res = AzureQueueClient.getMessage( context, queueName )
+    
+    var status = res._1
+    var msg = res._2.get
+
+    println("result " + msg.message )
+  }
+    
   def main(args: Array[String]) =
   {
 
@@ -351,12 +369,16 @@ object basicblobtest
     //setContainerACL( true )
     //getContainerACL()
     //deleteContainer()
+
+    putMessage( "foo", "bar")
+    getMessage( "foo" )
+    
   
   
     //createContainer()
     
-    createQueue( args(0) )
-    listQueues()
+    //createQueue( args(0) )
+    //listQueues()
     
     /*
     deleteContainer()

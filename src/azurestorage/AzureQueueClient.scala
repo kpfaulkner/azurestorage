@@ -130,24 +130,68 @@ object AzureQueueClient
     
     return s
   }
-  
+ 
+  def putMessage( context:AzureContext, queueName:String,  message:String): Status =
+  {
+    var status = new Status()
+       
+    var msg = new QueueMessage( message )
+    status = putMessage( context, queueName, msg )
+    
+    return status
+  }
+   
   // should I be passing about some instance of a 'Queue' class...  and act on that?
   // For now will just try and keep it simple with queuename etc...
   // That is inconsistent to the Blob storage part... but will see what I can do.
   // message... should it be string or byte array?
-  def putMessage( context:AzureContext, queueName:String, message:String): Status =
+  def putMessage( context:AzureContext, queueName:String, message:QueueMessage): Status =
   {
     var status = new Status()
+        
+    try
+    {
+      status = queueDAO.putMessage( context.accountName, context.key, queueName, message  )
     
+    }
+    catch 
+    {
+      // nasty general catch...
+      case ex: Exception => {
+        log.error("AzureQueueClient::putMessage exception " + ex.getStackTrace() )
+        status.code = StatusCodes.FAILED
+        status.message = ex.toString()
+      }
+    }
+
     return status
   }
 
-  def getMessage( context:AzureContext, queueName:String) : (Status, QueueMessage ) =
+  def getMessage( context:AzureContext, queueName:String) : (Status, Option[ QueueMessage ] ) =
   {
   
     var status = new Status()
+    var msg:Option[ QueueMessage] = None
     
-    return (status, null )
+    try
+    {
+      var res = queueDAO.getMessage( context.accountName, context.key, queueName   )
+    
+      status = res._1
+      msg = res._2
+      
+    }
+    catch 
+    {
+      // nasty general catch...
+      case ex: Exception => {
+        log.error("AzureQueueClient::getMessage exception " + ex.getStackTrace() )
+        status.code = StatusCodes.FAILED
+        status.message = ex.toString()
+      }
+    }
+
+    return (status, msg  )
   }
 
   def peekMessage( context:AzureContext, queueName:String) : (Status, QueueMessage ) =

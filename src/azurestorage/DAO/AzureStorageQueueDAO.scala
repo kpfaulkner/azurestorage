@@ -63,10 +63,35 @@ import net.lag.logging.Logger
 class AzureStorageQueueDAO 
 {
 
-  val baseBlobURL = ".queue.core.windows.net"
+  val baseQueueURL = ".queue.core.windows.net"
 
   val log = Logger.get
   
+
+  def putMessage( accountName:String, key:String, queueName:String, msg:QueueMessage  ): Status =
+  {
+    log.info("AzureStorageQueueDAO::putMessage start")
+    
+    var status = new Status()
+ 
+    var method = new PostMethod(  )
+    
+    var request = "<QueueMessage><MessageText>"+msg.message+"</MessageText></QueueMessage>"
+
+    var entity = new ByteArrayRequestEntity( request.getBytes  )
+    method.setRequestEntity( entity )
+
+    // queueName being manipulated. Need to rename some things here.,
+    status = genericSet( method, accountName, key, "", queueName+"/messages", new HashMap[String, String](), request.getBytes )
+
+        
+    if (status.code == StatusCodes.CREATE_QUEUE_SUCCESS)
+    {
+      status.successful = true
+    }
+    
+    return status
+  }
 
   def createQueue( accountName:String, key:String, queueName:String ): Status =
   {
@@ -96,7 +121,8 @@ class AzureStorageQueueDAO
     var method = new GetMethod(  )
     
     status = genericSet( method, accountName, key, "comp=list", "", new HashMap[String, String](), null )
-    
+
+
     if (status.code == StatusCodes.LIST_QUEUES_SUCCESS)
     {
       status.successful = true
@@ -113,7 +139,39 @@ class AzureStorageQueueDAO
   }
   
   
+  def getMessage( accountName:String, key:String , queueName:String  ): ( Status, Option[ QueueMessage ]) =
+  {
+    log.info("AzureStorageQueueDAO::listQueues start")
     
+    var status = new Status()
+    var msg:Option[ QueueMessage ] = None 
+        
+    var method = new GetMethod(  )
+    
+    status = genericSet( method, accountName, key, "", queueName+"/messages", new HashMap[String, String](), null )
+    
+    if (status.code == StatusCodes.GET_MESSAGE_SUCCESS)
+    {
+      status.successful = true
+      
+      var responseBody = method.getResponseBodyAsString()
+
+      var xml = responseBody.substring(3)
+
+      log.debug("queue message " + xml )
+
+      var messageList = parseMessage( xml )
+      
+      // assume only 1 message for now.
+      if ( !messageList.isEmpty )
+      {
+        msg = Option( messageList(0) )
+      }
+
+    }
+    
+    return ( status, msg )
+  }    
   // see if I can make a generic set.
   def genericSet( method:HttpMethodBase, accountName:String, key:String, canonicalResourceExtra: String, queueName:String, metaData:HashMap[String, String], data: Array[Byte] ): Status =
   {
@@ -125,7 +183,7 @@ class AzureStorageQueueDAO
     // for some reason, the canonicalResourceExtra needs a = for the URL but a : for the canonialResource.
     // go figure....
     var canonicalResource = "/"+accountName+"/"+queueName
-    var url = "http://"+accountName+baseBlobURL+"/"+queueName
+    var url = "http://"+accountName+baseQueueURL+"/"+queueName
      
     if ( canonicalResourceExtra != "" )
     {
@@ -202,5 +260,49 @@ class AzureStorageQueueDAO
     return l
     
   }
+
+
+
+
+  private def parseMessage( xml: String ): List[QueueMessage] = 
+  {
+    log.info("AzureStorageQueueDAO::parseMessage start")  
     
+    var l = List[QueueMessage]()
+    
+    var xmlNode = XML.loadString( xml )
+    
+    var messageList = xmlNode \\ "QueueMessage"
+    
+    for ( msg <- messageList )
+    {
+
+      var text = ( msg  \ "MessageText").text
+
+      var m = new QueueMessage( text )
+
+      m.messageId = ( msg  \ "MessageId").text
+     
+      // should parse.
+      m.insertionTime = ( msg  \ "InsertionTime").text
+      
+      // should parse
+      m.expirationTime = ( msg  \ "ExpirationTime").text
+
+      m.popReceipt = ( msg  \ "PopReceipt").text
+     
+      // should parse
+      m.timeNextVisible = ( msg  \ "TimeNextVisible").text
+      
+      m.dequeueCount = ( ( msg  \ "DequeueCount").text ).toInt
+
+      log.debug("message is " + m.toString() )
+      l ::= m
+    }
+    
+    return l
+    
+  }
+    
+        
 }
